@@ -1,6 +1,11 @@
-----Iteration One----
+----Iteration One---- 
+
 Aden - Event Scheduling
-Jackson - 
-Ryan - 
+
+Jackson - Costume Desginer
+
+Ryan - Talent Management
+
 Michael - 
+
 Jongmin - 
