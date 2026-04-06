@@ -2,6 +2,7 @@ package org.example.api.controllers;
 
 import org.example.api.JsonParser;
 import org.example.models.Event;
+import org.example.models.Venue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,51 +16,52 @@ public class EventController {
 
     private static final String EVENT_FILE = "src/main/java/org/example/database/Event.json";
 
-    public void scheduleEvent() {
+    public static void scheduleEvent() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Create Event");
-        System.out.print("Enter event ID: ");
-        String id = scanner.nextLine();
+        try {
+            System.out.print("Enter event name: ");
+            String name = scanner.nextLine();
 
-        System.out.print("Enter event name: ");
-        String name = scanner.nextLine();
+            System.out.print("Enter event date: ");
+            String date = scanner.nextLine();
 
-        System.out.print("Enter event date: ");
-        String date = scanner.nextLine();
+            System.out.print("Enter event time: ");
+            String time = scanner.nextLine();
 
-        System.out.print("Enter event time: ");
-        String time = scanner.nextLine();
+            System.out.println("Venues:");
+            VenueController.displayAllVenues();
+            System.out.print("Enter venue ID: ");
+            int venueID = Integer.parseInt(scanner.nextLine());
 
-        System.out.print("Enter venue ID: ");
-        String venueID = scanner.nextLine();
+            Venue venue = VenueController.getVenueByID(venueID);
 
-        System.out.print("Enter venue name: ");
-        String venueName = scanner.nextLine();
+            Event event = new Event(getNextID(), name, date, time, venueID, venue.getName());
 
-        Event event = new Event(id, name, date, time, venueID, venueName);
+            if (event.hasMissingInfo()) {
+                System.out.println("Event could not be created. Missing required information.");
+                return;
+            }
 
-        if (event.hasMissingInfo()) {
-            System.out.println("Event could not be created. Missing required information.");
-            return;
+            if (!isVenueAvailable(event)) {
+                System.out.println("That venue is already booked for that date and time.");
+                return;
+            }
+
+            saveEvent(event);
+            System.out.println("Event scheduled successfully.");
+            System.out.println(event);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Event ID and Venue ID must be whole numbers.");
         }
-
-        if (!isVenueAvailable(event)) {
-            System.out.println("That venue is already booked for that date and time.");
-            return;
-        }
-
-        saveEvent(event);
-        System.out.println("Event scheduled successfully.");
-        System.out.println(event);
     }
 
-    public boolean isVenueAvailable(Event newEvent) {
+    public static boolean isVenueAvailable(Event newEvent) {
         List<Event> events = getAllEvents();
 
         for (Event existingEvent : events) {
-            boolean sameVenue = existingEvent.getVenueID() != null &&
-                    existingEvent.getVenueID().equalsIgnoreCase(newEvent.getVenueID());
+            boolean sameVenue = existingEvent.getVenueID() == newEvent.getVenueID();
 
             boolean sameDate = existingEvent.getDate() != null &&
                     existingEvent.getDate().equalsIgnoreCase(newEvent.getDate());
@@ -75,13 +77,27 @@ public class EventController {
         return true;
     }
 
-    public void saveEvent(Event event) {
+    public static void saveEvent(Event event) {
         List<Event> events = getAllEvents();
         events.add(event);
         writeEvents(events);
     }
 
-    public List<Event> getAllEvents() {
+    public static int getNextID() {
+        List<Event> events = getAllEvents();
+
+        int maxID = 0;
+
+        for (Event event : events) {
+            if (event.getID() > maxID) {
+                maxID = event.getID();
+            }
+        }
+
+        return maxID + 1;
+    }
+
+    public static List<Event> getAllEvents() {
         try {
             Path path = Paths.get(EVENT_FILE);
 
@@ -105,11 +121,11 @@ public class EventController {
         }
     }
 
-    public Event getEventByID(String id) {
+    public Event getEventByID(int id) {
         List<Event> events = getAllEvents();
 
         for (Event event : events) {
-            if (event.getID() != null && event.getID().equalsIgnoreCase(id)) {
+            if (event.getID() == id) {
                 return event;
             }
         }
@@ -117,13 +133,13 @@ public class EventController {
         return null;
     }
 
-    public boolean deleteEventByID(String id) {
+    public static boolean deleteEventByID(int id) {
         List<Event> events = getAllEvents();
 
         for (int i = 0; i < events.size(); i++) {
             Event event = events.get(i);
 
-            if (event.getID() != null && event.getID().equalsIgnoreCase(id)) {
+            if (event.getID() == id) {
                 events.remove(i);
                 writeEvents(events);
                 return true;
@@ -133,7 +149,7 @@ public class EventController {
         return false;
     }
 
-    public void displayAllEvents() {
+    public static void displayAllEvents() {
         List<Event> events = getAllEvents();
 
         if (events.isEmpty()) {
@@ -146,7 +162,7 @@ public class EventController {
         }
     }
 
-    private void writeEvents(List<Event> events) {
+    private static void writeEvents(List<Event> events) {
         try {
             Path path = Paths.get(EVENT_FILE);
 
@@ -162,7 +178,7 @@ public class EventController {
         }
     }
 
-    private void createEmptyEventFile(Path path) throws IOException {
+    private static void createEmptyEventFile(Path path) throws IOException {
         Path parent = path.getParent();
 
         if (parent != null && !Files.exists(parent)) {

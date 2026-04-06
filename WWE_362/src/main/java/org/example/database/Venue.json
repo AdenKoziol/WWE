@@ -1,26 +1,26 @@
 [
   {
-    "ID": "V001",
+    "ID": 1,
     "name": "Madison Square Garden",
     "location": "New York, NY"
   },
   {
-    "ID": "V002",
+    "ID": 2,
     "name": "Staples Center",
     "location": "Los Angeles, CA"
   },
   {
-    "ID": "V003",
+    "ID": 3,
     "name": "United Center",
     "location": "Chicago, IL"
   },
   {
-    "ID": "V004",
+    "ID": 4,
     "name": "American Airlines Center",
     "location": "Dallas, TX"
   },
   {
-    "ID": "V005",
+    "ID": 5,
     "name": "TD Garden",
     "location": "Boston, MA"
   }

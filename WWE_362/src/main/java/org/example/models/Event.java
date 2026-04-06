@@ -1,18 +1,17 @@
 package org.example.models;
 
 public class Event {
-    private String ID;
+    private int ID;
     private String name;
     private String date;
     private String time;
-    private String venueID;
+    private int venueID;
     private String venueName;
 
     public Event() {
     }
 
-    public Event(String ID, String name, String date, String time,
-                 String venueID, String venueName) {
+    public Event(int ID, String name, String date, String time, int venueID, String venueName) {
         this.ID = ID;
         this.name = name;
         this.date = date;
@@ -21,11 +20,11 @@ public class Event {
         this.venueName = venueName;
     }
 
-    public String getID() {
+    public int getID() {
         return ID;
     }
 
-    public void setID(String ID) {
+    public void setID(int ID) {
         this.ID = ID;
     }
 
@@ -53,11 +52,11 @@ public class Event {
         this.time = time;
     }
 
-    public String getVenueID() {
+    public int getVenueID() {
         return venueID;
     }
 
-    public void setVenueID(String venueID) {
+    public void setVenueID(int venueID) {
         this.venueID = venueID;
     }
 
@@ -70,11 +69,10 @@ public class Event {
     }
 
     public boolean hasMissingInfo() {
-        return isBlank(ID) ||
+        return
                 isBlank(name) ||
                 isBlank(date) ||
                 isBlank(time) ||
-                isBlank(venueID) ||
                 isBlank(venueName);
     }
 

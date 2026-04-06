@@ -1,24 +1,24 @@
 package org.example.models;
 
 public class Venue {
-    private String ID;
+    private int ID;
     private String name;
     private String location;
 
     public Venue() {
     }
 
-    public Venue(String ID, String name, String location) {
+    public Venue(int ID, String name, String location) {
         this.ID = ID;
         this.name = name;
         this.location = location;
     }
 
-    public String getID() {
+    public int getID() {
         return ID;
     }
 
-    public void setID(String ID) {
+    public void setID(int ID) {
         this.ID = ID;
     }
 

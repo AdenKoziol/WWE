@@ -18,31 +18,37 @@ public class VenueController {
     public void createVenue() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Create Venue");
-        System.out.print("Enter venue ID: ");
-        String id = scanner.nextLine();
+        try {
+            System.out.println("Create Venue");
 
-        System.out.print("Enter venue name: ");
-        String name = scanner.nextLine();
+            System.out.print("Enter venue ID: ");
+            int id = Integer.parseInt(scanner.nextLine());
 
-        System.out.print("Enter venue location: ");
-        String location = scanner.nextLine();
+            System.out.print("Enter venue name: ");
+            String name = scanner.nextLine();
 
-        if (isBlank(id) || isBlank(name) || isBlank(location)) {
-            System.out.println("Venue could not be created. Missing required information.");
-            return;
+            System.out.print("Enter venue location: ");
+            String location = scanner.nextLine();
+
+            if (isBlank(name) || isBlank(location)) {
+                System.out.println("Venue could not be created. Missing required information.");
+                return;
+            }
+
+            if (getVenueByID(id) != null) {
+                System.out.println("A venue with that ID already exists.");
+                return;
+            }
+
+            Venue venue = new Venue(id, name, location);
+            saveVenue(venue);
+
+            System.out.println("Venue created successfully.");
+            System.out.println(venue);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Venue ID must be a whole number.");
         }
-
-        if (getVenueByID(id) != null) {
-            System.out.println("A venue with that ID already exists.");
-            return;
-        }
-
-        Venue venue = new Venue(id, name, location);
-        saveVenue(venue);
-
-        System.out.println("Venue created successfully.");
-        System.out.println(venue);
     }
 
     public void saveVenue(Venue venue) {
@@ -51,7 +57,7 @@ public class VenueController {
         writeVenues(venues);
     }
 
-    public List<Venue> getAllVenues() {
+    public static List<Venue> getAllVenues() {
         try {
             Path path = Paths.get(VENUE_FILE);
 
@@ -75,11 +81,11 @@ public class VenueController {
         }
     }
 
-    public Venue getVenueByID(String id) {
+    public static Venue getVenueByID(int id) {
         List<Venue> venues = getAllVenues();
 
         for (Venue venue : venues) {
-            if (venue.getID() != null && venue.getID().equalsIgnoreCase(id)) {
+            if (venue.getID() == id) {
                 return venue;
             }
         }
@@ -87,13 +93,13 @@ public class VenueController {
         return null;
     }
 
-    public boolean deleteVenueByID(String id) {
+    public boolean deleteVenueByID(int id) {
         List<Venue> venues = getAllVenues();
 
         for (int i = 0; i < venues.size(); i++) {
             Venue venue = venues.get(i);
 
-            if (venue.getID() != null && venue.getID().equalsIgnoreCase(id)) {
+            if (venue.getID() == id) {
                 venues.remove(i);
                 writeVenues(venues);
                 return true;
@@ -103,11 +109,11 @@ public class VenueController {
         return false;
     }
 
-    public boolean updateVenue(String id, String newName, String newLocation) {
+    public boolean updateVenue(int id, String newName, String newLocation) {
         List<Venue> venues = getAllVenues();
 
         for (Venue venue : venues) {
-            if (venue.getID() != null && venue.getID().equalsIgnoreCase(id)) {
+            if (venue.getID() == id) {
                 if (!isBlank(newName)) {
                     venue.setName(newName);
                 }
@@ -124,7 +130,7 @@ public class VenueController {
         return false;
     }
 
-    public void displayAllVenues() {
+    public static void displayAllVenues() {
         List<Venue> venues = getAllVenues();
 
         if (venues.isEmpty()) {
@@ -161,7 +167,7 @@ public class VenueController {
         }
     }
 
-    private void createEmptyVenueFile(Path path) throws IOException {
+    private static void createEmptyVenueFile(Path path) throws IOException {
         Path parent = path.getParent();
 
         if (parent != null && !Files.exists(parent)) {
