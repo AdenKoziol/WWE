@@ -17,6 +17,7 @@ public class Main {
             System.out.println("Main Menu");
             System.out.println("1. Event Planning");
             System.out.println("2. Box Office (Ticketing)");
+            System.out.println("3. Design Costume");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
 
@@ -38,6 +39,9 @@ public class Main {
                         org.example.api.controllers.TicketController.displayAllSales();
                     }
                     pause();
+                    break;
+                case "3":
+                    CostumeDesigning.showmenu(scanner);
                     break;
                 case "0":
                     System.out.println("Exiting... Goodbye!");
