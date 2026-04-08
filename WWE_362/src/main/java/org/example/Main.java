@@ -16,6 +16,7 @@ public class Main {
 
             System.out.println("Main Menu");
             System.out.println("1. Event Planning");
+            System.out.println("2. Box Office (Ticketing)");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
 
@@ -24,6 +25,19 @@ public class Main {
             switch (choice) {
                 case "1":
                     EventPlanning.showMenu(scanner);
+                    break;
+                case "2":
+                    printHeader();
+                    System.out.println("1. Process Ticket Sale");
+                    System.out.println("2. View All Sales");
+                    System.out.print("Choose an option: ");
+                    String ticketChoice = scanner.nextLine();
+                    if (ticketChoice.equals("1")) {
+                        org.example.api.controllers.TicketController.processSale(scanner);
+                    } else if (ticketChoice.equals("2")) {
+                        org.example.api.controllers.TicketController.displayAllSales();
+                    }
+                    pause();
                     break;
                 case "0":
                     System.out.println("Exiting... Goodbye!");
