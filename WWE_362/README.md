@@ -8,4 +8,4 @@ Ryan - Talent Management
 
 Michael - 
 
-Jongmin - 
+Jongmin - Process Ticket Sale
