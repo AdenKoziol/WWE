@@ -34,7 +34,7 @@ public class WrestlerController {
                 System.out.println("Wrestler could not be created. Stage name already taken.");
                 return;
             }
-
+    
             Wrestler wrestler = new Wrestler(getNextID(), stageName, realName, hometown, style);
 
             if (wrestler.hasMissingInfo()) {
