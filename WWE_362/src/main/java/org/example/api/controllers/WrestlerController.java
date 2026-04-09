@@ -30,6 +30,11 @@ public class WrestlerController {
             System.out.print("Enter wrestling style: ");
             String style = scanner.nextLine();
 
+            if (stageNameExists(stageName)) {
+                System.out.println("Wrestler could not be created. Stage name already taken.");
+                return;
+            }
+
             Wrestler wrestler = new Wrestler(getNextID(), stageName, realName, hometown, style);
 
             if (wrestler.hasMissingInfo()) {
@@ -134,6 +139,19 @@ public class WrestlerController {
             System.out.println("Error writing wrestler file.");
         }
     }
+
+    private static boolean stageNameExists(String stageName) {
+    List<Wrestler> wrestlers = getAllWrestlers();
+
+    for (Wrestler wrestler : wrestlers) {
+        if (wrestler.getStageName() != null &&
+            wrestler.getStageName().equalsIgnoreCase(stageName)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
     private static void createEmptyFile(Path path) throws IOException {
         Path parent = path.getParent();
