@@ -6,6 +6,6 @@ Jackson - Costume Desginer
 
 Ryan - Talent Management
 
-Michael - 
+Michael - Match Card
 
 Jongmin - Process Ticket Sale
