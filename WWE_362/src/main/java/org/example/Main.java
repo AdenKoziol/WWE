@@ -30,17 +30,7 @@ public class Main {
                     EventPlanning.showMenu(scanner);
                     break;
                 case "2":
-                    printHeader();
-                    System.out.println("1. Process Ticket Sale");
-                    System.out.println("2. View All Sales");
-                    System.out.print("Choose an option: ");
-                    String ticketChoice = scanner.nextLine();
-                    if (ticketChoice.equals("1")) {
-                        org.example.api.controllers.TicketController.processSale(scanner);
-                    } else if (ticketChoice.equals("2")) {
-                        org.example.api.controllers.TicketController.displayAllSales();
-                    }
-                    pause();
+                    BoxOffice.showMenu(scanner);
                     break;
                 case "3":
                     CostumeDesigning.showmenu(scanner);
