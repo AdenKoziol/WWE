@@ -1,1 +1,1 @@
-[{"ID":1,"eventID":1,"ticketTier":"General Admission","quantity":3,"totalPrice":150.0},{"ID":2,"eventID":5,"ticketTier":"VIP","quantity":1,"totalPrice":150.0}]
+[{"ID":1,"eventID":1,"ticketTier":"General Admission","quantity":3,"totalPrice":150.0},{"ID":2,"eventID":5,"ticketTier":"VIP","quantity":1,"totalPrice":150.0},{"ID":3,"eventID":3,"ticketTier":"General Admission","quantity":2,"totalPrice":100.0}]

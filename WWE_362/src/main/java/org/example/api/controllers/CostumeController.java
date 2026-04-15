@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class CostumeController {
 
-    private static final String COSTUME_FILE = "WWE_362/src/main/java/org/example/database/Costumes.json";
+    private static final String COSTUME_FILE = "src/main/java/org/example/database/Costumes.json";
 
     public static void newDesign() {
         Scanner scanner = new Scanner(System.in);
