@@ -1,0 +1,67 @@
+[
+  {
+    "ID": 1,
+    "name": "Main Entrance Stand",
+    "location": "Gate A",
+    "itemsSold": [
+      { "ID": 1, "Name": "Hot Dog", "price": 4.50 },
+      { "ID": 5, "Name": "Popcorn", "price": 3.50 },
+      { "ID": 7, "Name": "Soda", "price": 2.75 }
+    ],
+    "employeesOnShift": [
+      { "ID": 1, "name": "John Smith", "employeeType": "Concessions" }
+    ]
+  },
+  {
+    "ID": 2,
+    "name": "North Side Stand",
+    "location": "Section 101",
+    "itemsSold": [
+      { "ID": 2, "Name": "Hamburger", "price": 6.00 },
+      { "ID": 6, "Name": "Soft Pretzel", "price": 4.00 },
+      { "ID": 8, "Name": "Water Bottle", "price": 2.00 }
+    ],
+    "employeesOnShift": [
+      { "ID": 2, "name": "Emily Johnson", "employeeType": "Concessions" }
+    ]
+  },
+  {
+    "ID": 3,
+    "name": "South Side Stand",
+    "location": "Section 120",
+    "itemsSold": [
+      { "ID": 3, "Name": "Cheeseburger", "price": 6.50 },
+      { "ID": 4, "Name": "Nachos", "price": 5.00 },
+      { "ID": 9, "Name": "Candy", "price": 2.50 }
+    ],
+    "employeesOnShift": [
+      { "ID": 3, "name": "Michael Brown", "employeeType": "Concessions" }
+    ]
+  },
+  {
+    "ID": 4,
+    "name": "Upper Deck Stand",
+    "location": "Section 200",
+    "itemsSold": [
+      { "ID": 1, "Name": "Hot Dog", "price": 4.50 },
+      { "ID": 10, "Name": "Ice Cream", "price": 3.75 },
+      { "ID": 7, "Name": "Soda", "price": 2.75 }
+    ],
+    "employeesOnShift": [
+      { "ID": 4, "name": "Sarah Davis", "employeeType": "Concessions" }
+    ]
+  },
+  {
+    "ID": 5,
+    "name": "VIP Lounge Stand",
+    "location": "VIP Area",
+    "itemsSold": [
+      { "ID": 2, "Name": "Hamburger", "price": 6.00 },
+      { "ID": 3, "Name": "Cheeseburger", "price": 6.50 },
+      { "ID": 10, "Name": "Ice Cream", "price": 3.75 }
+    ],
+    "employeesOnShift": [
+      { "ID": 5, "name": "David Wilson", "employeeType": "Concessions" }
+    ]
+  }
+]

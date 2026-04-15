@@ -20,6 +20,7 @@ public class Main {
             System.out.println("3. Design Costume");
             System.out.println("4. Talent Management");
             System.out.println("5. Match Cards");
+            System.out.println("6. Manage Concessions");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
 
@@ -40,6 +41,9 @@ public class Main {
                     break;
                 case "5":
                     MatchCardCreating.showMenu(scanner);
+                    break;
+                case "6":
+                    ManageConcessions.showMenu(scanner);
                     break;
                 case "0":
                     System.out.println("Exiting... Goodbye!");

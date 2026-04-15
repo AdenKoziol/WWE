@@ -1,0 +1,27 @@
+[
+  {
+    "ID": 1,
+    "name": "John Smith",
+    "employeeType": "Concessions"
+  },
+  {
+    "ID": 2,
+    "name": "Emily Johnson",
+    "employeeType": "Concessions"
+  },
+  {
+    "ID": 3,
+    "name": "Michael Brown",
+    "employeeType": "Concessions"
+  },
+  {
+    "ID": 4,
+    "name": "Sarah Davis",
+    "employeeType": "Concessions"
+  },
+  {
+    "ID": 5,
+    "name": "David Wilson",
+    "employeeType": "Concessions"
+  }
+]

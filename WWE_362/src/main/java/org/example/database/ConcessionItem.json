@@ -1,0 +1,12 @@
+[
+  { "ID": 1, "name": "Hot Dog", "price": 4.50 },
+  { "ID": 2, "name": "Hamburger", "price": 6.00 },
+  { "ID": 3, "name": "Cheeseburger", "price": 6.50 },
+  { "ID": 4, "name": "Nachos", "price": 5.00 },
+  { "ID": 5, "name": "Popcorn", "price": 3.50 },
+  { "ID": 6, "name": "Soft Pretzel", "price": 4.00 },
+  { "ID": 7, "name": "Soda", "price": 2.75 },
+  { "ID": 8, "name": "Water Bottle", "price": 2.00 },
+  { "ID": 9, "name": "Candy", "price": 2.50 },
+  { "ID": 10, "name": "Ice Cream", "price": 3.75 }
+]
