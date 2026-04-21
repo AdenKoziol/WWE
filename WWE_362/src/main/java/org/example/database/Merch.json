@@ -1,0 +1,12 @@
+[
+  { "ID": 1, "name": "Cody Rhodes T-Shirt", "sku": "CR-TSH-01", "wholesaleCost": 8.50, "retailPrice": 35.00, "globalQuantity": 500 },
+  { "ID": 2, "name": "Roman Reigns Hoodie", "sku": "RR-HOD-02", "wholesaleCost": 15.00, "retailPrice": 65.00, "globalQuantity": 300 },
+  { "ID": 3, "name": "WWE Championship Belt", "sku": "BELT-REPL-01", "wholesaleCost": 120.00, "retailPrice": 450.00, "globalQuantity": 50 },
+  { "ID": 4, "name": "Seth Rollins Glasses", "sku": "SR-SUN-04", "wholesaleCost": 5.00, "retailPrice": 25.00, "globalQuantity": 1000 },
+  { "ID": 5, "name": "Rhea Ripley Poster", "sku": "RR-POS-05", "wholesaleCost": 2.00, "retailPrice": 15.00, "globalQuantity": 2000 },
+  { "ID": 6, "name": "WrestleMania Program", "sku": "WM-PROG-24", "wholesaleCost": 18.00, "retailPrice": 20.00, "globalQuantity": 1500 },
+  { "ID": 7, "name": "John Cena Wristbands", "sku": "JC-WRI-07", "wholesaleCost": 3.50, "retailPrice": 12.00, "globalQuantity": 800 },
+  { "ID": 8, "name": "Foam Finger", "sku": "WWE-FOAM-08", "wholesaleCost": 1.50, "retailPrice": 10.00, "globalQuantity": 2500 },
+  { "ID": 9, "name": "Undertaker Hat", "sku": "UT-HAT-09", "wholesaleCost": 12.00, "retailPrice": 45.00, "globalQuantity": 150 },
+  { "ID": 10, "name": "WWE 2K26 Video Game", "sku": "VG-2K26-PS5", "wholesaleCost": 55.00, "retailPrice": 69.99, "globalQuantity": 400 }
+]

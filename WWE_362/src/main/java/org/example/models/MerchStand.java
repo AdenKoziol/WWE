@@ -1,29 +1,34 @@
 package org.example.models;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MerchStand {
     private String standID;
     private String location;
-    // SKU -> Quantity
-    private Map<String, Integer> localInventory; 
+    private List<InventoryEntry> localInventory = new ArrayList<>();
 
-    public MerchStand() {
-        this.localInventory = new HashMap<>();
-    }
+    public MerchStand() {}
 
     public MerchStand(String standID, String location) {
         this.standID = standID;
         this.location = location;
-        this.localInventory = new HashMap<>();
+        this.localInventory = new ArrayList<>();
     }
 
-    // Getters and Setters for JsonParser
+    // Business Logic: Find an entry by SKU within the list
+    public InventoryEntry findEntry(String sku) {
+        return localInventory.stream()
+                .filter(e -> e.getSku().equalsIgnoreCase(sku))
+                .findFirst()
+                .orElse(null);
+    }
+
+    // Getters and Setters
     public String getStandID() { return standID; }
     public void setStandID(String standID) { this.standID = standID; }
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
-    public Map<String, Integer> getLocalInventory() { return localInventory; }
-    public void setLocalInventory(Map<String, Integer> inv) { this.localInventory = inv; }
+    public List<InventoryEntry> getLocalInventory() { return localInventory; }
+    public void setLocalInventory(List<InventoryEntry> localInventory) { this.localInventory = localInventory; }
 }

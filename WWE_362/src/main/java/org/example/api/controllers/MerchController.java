@@ -1,6 +1,7 @@
 package org.example.api.controllers;
 
 import org.example.api.JsonParser;
+import org.example.models.InventoryEntry;
 import org.example.models.MerchStand;
 import org.example.models.MerchandiseItem;
 
@@ -10,7 +11,6 @@ import java.util.*;
 
 public class MerchController {
     private static final String MERCH_FILE = "WWE_362/src/main/java/org/example/database/Merch.json";
-    private static final String ASSIGNMENT_FILE = "src/main/java/org/example/database/booth_assignments.json";
 
     public static void registerNewItem(Scanner scanner) {
         try {
@@ -49,57 +49,53 @@ public class MerchController {
     }
 
     public static void assignToBooth(Scanner scanner) {
-        List<MerchandiseItem> inventory = getAllItems();
-        System.out.print("Enter Merchandise ID to move: ");
-        int merchID = Integer.parseInt(scanner.nextLine());
+    List<MerchandiseItem> inventory = getAllItems();
+    System.out.print("Enter Merch ID: ");
+    int merchID = Integer.parseInt(scanner.nextLine());
 
-        MerchandiseItem item = inventory.stream()
-                .filter(i -> i.getID() == merchID).findFirst().orElse(null);
+    MerchandiseItem item = inventory.stream()
+            .filter(i -> i.getID() == merchID).findFirst().orElse(null);
 
-        if (item == null) {
-            System.out.println("ERROR: Item ID not found.");
-            return;
-        }
+    if (item == null) return;
 
-        System.out.print("Enter Destination Stand ID: ");
-        String sid = scanner.nextLine(); 
+    List<MerchStand> allStands = MerchStandController.getAllStands();
+    allStands.removeIf(Objects::isNull); 
 
-        List<MerchStand> allStands = MerchStandController.getAllStands();
-        MerchStand targetStand = allStands.stream()
-                .filter(s -> s.getStandID().equalsIgnoreCase(sid))
-                .findFirst().orElse(null);
+    System.out.print("Enter Stand ID: ");
+    String sid = scanner.nextLine();
 
-        if (targetStand == null) {
-            System.out.println("CRITICAL ERROR: Stand ID not recognized. Register the stand first.");
-            return;
-        }
+    MerchStand targetStand = allStands.stream()
+            .filter(s -> s != null && s.getStandID().equalsIgnoreCase(sid))
+            .findFirst().orElse(null);
 
-        System.out.print("Enter Quantity to Transfer: ");
-        int transferQty = Integer.parseInt(scanner.nextLine());
-
-        // Logic: Inventory Integrity Check
-        if (transferQty > item.getGlobalQuantity()) {
-            System.out.println("INVENTORY SHORTAGE: Only " + item.getGlobalQuantity() + " units available.");
-            return;
-        }
-
-        // ATOMIC TRANSACTION:
-        // 1. Subtract from Global
-        item.setGlobalQuantity(item.getGlobalQuantity() - transferQty);
-
-        // 2. Add to Local Stand Inventory
-        int currentLocalQty = targetStand.getLocalInventory().getOrDefault(item.getSku(), 0);
-        targetStand.getLocalInventory().put(item.getSku(), currentLocalQty + transferQty);
-
-        // 3. Save Both Files (Atomic-like behavior)
-        writeItems(inventory);
-        MerchStandController.writeStands(allStands); // Make sure StandController.writeStands is public!
-
-        // 4. Log the assignment (Audit Trail)
-        logAssignment(merchID, sid, transferQty);
-
-        System.out.println("SUCCESS: Inventory transferred from Warehouse to " + sid);
+    if (targetStand == null) {
+        System.out.println("Stand not found.");
+        return;
     }
+
+    System.out.print("Quantity: ");
+    int transferQty = Integer.parseInt(scanner.nextLine());
+
+    if (transferQty > item.getGlobalQuantity()) return;
+
+    // --- NEW LIST LOGIC ---
+    InventoryEntry entry = targetStand.findEntry(item.getSku());
+    if (entry != null) {
+        // Update existing entry
+        entry.setQuantity(entry.getQuantity() + transferQty);
+    } else {
+        // Add new entry to the list
+        targetStand.getLocalInventory().add(new InventoryEntry(item.getSku(), transferQty));
+    }
+
+    // Update Global Stock
+    item.setGlobalQuantity(item.getGlobalQuantity() - transferQty);
+
+    writeItems(inventory);
+    MerchStandController.writeStands(allStands);
+
+    System.out.println("Transfer successful! " + item.getSku() + " moved to " + sid);
+}
 
     // Case 3: List all available products
     public static void viewAllInventory() {

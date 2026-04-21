@@ -2,88 +2,94 @@ package org.example.api.controllers;
 
 import org.example.api.JsonParser;
 import org.example.models.MerchStand;
+import org.example.models.InventoryEntry;
 import org.example.models.MerchandiseItem;
+
 import java.nio.file.*;
 import java.util.*;
 
 public class MerchStandController {
     private static final String STANDS_FILE = "WWE_362/src/main/java/org/example/database/MerchStands.json";
 
-    public static void processSale(Scanner scanner) {
-        try {
-            List<MerchStand> stands = getAllStands();
-            System.out.print("Enter Stand ID (e.g., NORTH-01): ");
-            String sid = scanner.nextLine();
-
-            // Find the specific stand
-            MerchStand stand = stands.stream()
-                    .filter(s -> s.getStandID().equalsIgnoreCase(sid))
-                    .findFirst().orElse(null);
-
-            if (stand == null) {
-                System.out.println("ERROR: Stand not found.");
-                return;
-            }
-
-            System.out.print("Enter SKU to sell: ");
-            String sku = scanner.nextLine();
-            System.out.print("Quantity: ");
-            int qty = Integer.parseInt(scanner.nextLine());
-
-            // Check local inventory
-            int currentQty = stand.getLocalInventory().getOrDefault(sku, 0);
-            if (currentQty < qty) {
-                System.out.println("DENIED: Stand only has " + currentQty + " in stock.");
-                return;
-            }
-
-            // Update local stock
-            stand.getLocalInventory().put(sku, currentQty - qty);
-
-            // Fetch price for receipt
-            MerchandiseItem item = MerchController.findItemBySku(sku);
-            if (item != null) {
-                System.out.println("--- RECEIPT ---");
-                System.out.printf("Item: %s | Total: $%.2f\n", item.getName(), (item.getRetailPrice() * qty));
-            }
-
-            // Save updated stands list
-            writeStands(stands);
-            System.out.println("Transaction complete. Files synchronized.");
-
-        } catch (Exception e) {
-            System.out.println("Error processing sale: " + e.getMessage());
-        }
-    }
-
+    // --- SETUP: Register a new physical location ---
     public static void registerStand(Scanner scanner) {
-        System.out.print("Enter New Stand ID (e.g., SOUTH-CONCOURSE-02): ");
+        System.out.print("Enter Stand ID (e.g. GATE-A-01): ");
         String id = scanner.nextLine();
-        System.out.print("Enter Physical Location Description: ");
+        System.out.print("Enter Location Name: ");
         String loc = scanner.nextLine();
 
         List<MerchStand> stands = getAllStands();
+        stands.add(new MerchStand(id, loc));
+        writeStands(stands);
+        
+        System.out.println("SUCCESS: Stand " + id + " registered.");
+    }
 
-        // Validation: Prevent duplicate Stand IDs
-        if (stands.stream().anyMatch(s -> s.getStandID().equalsIgnoreCase(id))) {
-            System.out.println("ERROR: A stand with that ID already exists.");
+    // --- SALES: The Point of Sale (POS) Logic ---
+    public static void processSale(Scanner scanner) {
+        List<MerchStand> stands = getAllStands();
+        System.out.print("Enter Stand ID: ");
+        String sid = scanner.nextLine();
+
+        MerchStand stand = stands.stream()
+                .filter(s -> s.getStandID().equalsIgnoreCase(sid))
+                .findFirst().orElse(null);
+
+        if (stand == null) {
+            System.out.println("ERROR: Stand not found.");
             return;
         }
 
-        stands.add(new MerchStand(id, loc));
-        writeStands(stands);
-        System.out.println("SUCCESS: New Merch Stand registered in the system.");
+        System.out.print("Enter SKU to sell: ");
+        String sku = scanner.nextLine();
+        System.out.print("Quantity: ");
+        int qty = Integer.parseInt(scanner.nextLine());
+
+        // Find the entry in the list
+        InventoryEntry entry = stand.findEntry(sku);
+        if (entry != null && entry.getQuantity() >= qty) {
+            // Update the quantity in the list
+            entry.setQuantity(entry.getQuantity() - qty);
+            
+            // Financial Feedback (Boss Test)
+            MerchandiseItem item = MerchController.findItemBySku(sku);
+            if (item != null) {
+                System.out.printf("SALE RECORDED: Total $%.2f\n", (item.getRetailPrice() * qty));
+            }
+            
+            writeStands(stands);
+        } else {
+            System.out.println("DENIED: Insufficient stock at this location.");
+        }
     }
 
+    // --- REPORTING: View all inventory at all stands ---
+    public static void viewAllStandStocks() {
+        List<MerchStand> stands = getAllStands();
+        System.out.println("\n--- CURRENT STAND INVENTORY MANIFESTS ---");
+        for (MerchStand s : stands) {
+            System.out.println("Stand: " + s.getStandID() + " [" + s.getLocation() + "]");
+            if (s.getLocalInventory().isEmpty()) {
+                System.out.println("  (Empty)");
+            } else {
+                for (InventoryEntry e : s.getLocalInventory()) {
+                    System.out.println("  - " + e.getSku() + ": " + e.getQuantity());
+                }
+            }
+        }
+    }
+
+    // --- DATA PERSISTENCE ---
     public static List<MerchStand> getAllStands() {
         try {
             Path path = Paths.get(STANDS_FILE);
-            if (!Files.exists(path)) {
-                Files.createDirectories(path.getParent());
-                Files.writeString(path, "[]");
-                return new ArrayList<>();
-            }
-            return JsonParser.deserializeList(Files.readString(path), MerchStand.class);
+            if (!Files.exists(path)) return new ArrayList<>();
+            String json = Files.readString(path).trim();
+            if (json.isEmpty() || json.equals("[]")) return new ArrayList<>();
+
+            List<MerchStand> list = JsonParser.deserializeList(json, MerchStand.class);
+            list.removeIf(Objects::isNull); // Filter out any corrupted nulls
+            return list;
         } catch (Exception e) {
             return new ArrayList<>();
         }
@@ -91,40 +97,11 @@ public class MerchStandController {
 
     public static void writeStands(List<MerchStand> stands) {
         try {
-            Files.writeString(Paths.get(STANDS_FILE), JsonParser.serialize(stands));
+            stands.removeIf(Objects::isNull);
+            String json = JsonParser.serialize(stands);
+            Files.writeString(Paths.get(STANDS_FILE), json);
         } catch (Exception e) {
-            System.out.println("Failed to save stand data.");
+            System.out.println("Persistence Error.");
         }
     }
-
-
-    public static void viewAllStandStocks() {
-    List<MerchStand> stands = getAllStands();
-    
-    if (stands.isEmpty()) {
-        System.out.println("No stands are currently registered in the system.");
-        return;
-    }
-
-    System.out.println("\n========================================");
-    System.out.println("       LIVE STAND INVENTORY REPORT");
-    System.out.println("========================================");
-
-    for (MerchStand stand : stands) {
-        System.out.println("\nStand ID: " + stand.getStandID());
-        System.out.println("Location: " + stand.getLocation());
-        System.out.println("----------------------------------------");
-        
-        Map<String, Integer> inventory = stand.getLocalInventory();
-        if (inventory == null || inventory.isEmpty()) {
-            System.out.println("  (No stock currently assigned)");
-        } else {
-            System.out.printf("  %-15s | %-10s\n", "SKU", "Quantity");
-            inventory.forEach((sku, qty) -> {
-                System.out.printf("  %-15s | %-10d\n", sku, qty);
-            });
-        }
-    }
-    System.out.println("========================================\n");
-}
 }
