@@ -1,6 +1,5 @@
 package org.example;
 
-import org.example.api.controllers.ConcessionStandController;
 import org.example.api.controllers.EmployeeController;
 import org.example.api.controllers.MerchController;
 import org.example.api.controllers.MerchStandController;
