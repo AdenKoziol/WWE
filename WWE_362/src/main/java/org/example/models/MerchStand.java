@@ -7,7 +7,8 @@ public class MerchStand {
     private String standID;
     private String location;
     private List<InventoryEntry> localInventory = new ArrayList<>();
-    private double profit;
+    private double profit = 0.0;
+    private List<Employee> staffOnShift = new ArrayList<>();
 
     public MerchStand() {}
 
@@ -15,7 +16,6 @@ public class MerchStand {
         this.standID = standID;
         this.location = location;
         this.localInventory = new ArrayList<>();
-        this.profit = 0;
     }
 
     public InventoryEntry findEntry(String sku) {
@@ -25,6 +25,8 @@ public class MerchStand {
                 .orElse(null);
     }
 
+    public List<Employee> getStaffOnShift() { return staffOnShift; }
+    public void setStaffOnShift(List<Employee> staffOnShift) { this.staffOnShift = staffOnShift; }
     public String getStandID() { return standID; }
     public void setStandID(String standID) { this.standID = standID; }
     public String getLocation() { return location; }
