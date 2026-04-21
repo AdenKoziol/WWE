@@ -12,13 +12,13 @@ public class MerchMenu {
             System.out.println("========================================");
             System.out.println("[ADMIN & SETUP]");
             System.out.println("1. Register New Stock Item (Warehouse)");
-            System.out.println("2. Configure New Merch Stand (Location)");
-            System.out.println("3. Delete Merchandise Item (Discontinue)");
-            System.out.println("4. Delete Merch Stand (Decommission)");
+            System.out.println("2. Configure New Merch Stand");
+            System.out.println("3. Delete Merchandise Item");
+            System.out.println("4. Delete Merch Stand");
             
             System.out.println("\n[LOGISTICS & SALES]");
             System.out.println("5. Assign Stock to Stand (Warehouse -> Stand)");
-            System.out.println("6. Process Live Sale (Point of Sale)");
+            System.out.println("6. Process Live Sale");
             System.out.println("7. View Stand Inventory Manifests");
             
             System.out.println("\n[INVENTORY & REPORTING]");
