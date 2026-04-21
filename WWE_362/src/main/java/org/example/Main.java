@@ -22,6 +22,7 @@ public class Main {
             System.out.println("5. Match Cards");
             System.out.println("6. Manage Concessions");
             System.out.println("7. Manage Sponsorships");
+            System.out.println("8. Manage Merchandise");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
 
@@ -48,6 +49,9 @@ public class Main {
                     break;
                 case "7":
                     ManageSponsorships.showMenu(scanner);
+                    break;
+                case "8":
+                    MerchMenu.showMenu(scanner);
                     break;
                 case "0":
                     System.out.println("Exiting... Goodbye!");
