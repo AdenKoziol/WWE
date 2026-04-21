@@ -7,9 +7,8 @@ import java.nio.file.*;
 import java.util.*;
 
 public class MerchStandController {
-    private static final String STANDS_FILE = "src/main/java/org/example/database/Stands.json";
+    private static final String STANDS_FILE = "WWE_362/src/main/java/org/example/database/MerchStands.json";
 
-    // BOSS TEST: Process a sale at a specific stand and update files
     public static void processSale(Scanner scanner) {
         try {
             List<MerchStand> stands = getAllStands();
@@ -18,8 +17,8 @@ public class MerchStandController {
 
             // Find the specific stand
             MerchStand stand = stands.stream()
-                .filter(s -> s.getStandID().equalsIgnoreCase(sid))
-                .findFirst().orElse(null);
+                    .filter(s -> s.getStandID().equalsIgnoreCase(sid))
+                    .findFirst().orElse(null);
 
             if (stand == null) {
                 System.out.println("ERROR: Stand not found.");
@@ -57,7 +56,25 @@ public class MerchStandController {
         }
     }
 
-    // --- Persistence Logic ---
+    public static void registerStand(Scanner scanner) {
+        System.out.print("Enter New Stand ID (e.g., SOUTH-CONCOURSE-02): ");
+        String id = scanner.nextLine();
+        System.out.print("Enter Physical Location Description: ");
+        String loc = scanner.nextLine();
+
+        List<MerchStand> stands = getAllStands();
+
+        // Validation: Prevent duplicate Stand IDs
+        if (stands.stream().anyMatch(s -> s.getStandID().equalsIgnoreCase(id))) {
+            System.out.println("ERROR: A stand with that ID already exists.");
+            return;
+        }
+
+        stands.add(new MerchStand(id, loc));
+        writeStands(stands);
+        System.out.println("SUCCESS: New Merch Stand registered in the system.");
+    }
+
     public static List<MerchStand> getAllStands() {
         try {
             Path path = Paths.get(STANDS_FILE);
@@ -72,11 +89,42 @@ public class MerchStandController {
         }
     }
 
-    private static void writeStands(List<MerchStand> stands) {
+    public static void writeStands(List<MerchStand> stands) {
         try {
             Files.writeString(Paths.get(STANDS_FILE), JsonParser.serialize(stands));
         } catch (Exception e) {
             System.out.println("Failed to save stand data.");
         }
     }
+
+
+    public static void viewAllStandStocks() {
+    List<MerchStand> stands = getAllStands();
+    
+    if (stands.isEmpty()) {
+        System.out.println("No stands are currently registered in the system.");
+        return;
+    }
+
+    System.out.println("\n========================================");
+    System.out.println("       LIVE STAND INVENTORY REPORT");
+    System.out.println("========================================");
+
+    for (MerchStand stand : stands) {
+        System.out.println("\nStand ID: " + stand.getStandID());
+        System.out.println("Location: " + stand.getLocation());
+        System.out.println("----------------------------------------");
+        
+        Map<String, Integer> inventory = stand.getLocalInventory();
+        if (inventory == null || inventory.isEmpty()) {
+            System.out.println("  (No stock currently assigned)");
+        } else {
+            System.out.printf("  %-15s | %-10s\n", "SKU", "Quantity");
+            inventory.forEach((sku, qty) -> {
+                System.out.printf("  %-15s | %-10d\n", sku, qty);
+            });
+        }
+    }
+    System.out.println("========================================\n");
+}
 }
