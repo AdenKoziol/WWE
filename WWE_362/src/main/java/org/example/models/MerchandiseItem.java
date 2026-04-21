@@ -28,7 +28,6 @@ public class MerchandiseItem {
         return getProfitMargin() < 15.0;
     }
 
-    // Getters and Setters...
     public int getID() { return ID; }
     public String getSku() { return sku; }
     public int getGlobalQuantity() { return globalQuantity; }

@@ -7,6 +7,7 @@ public class MerchStand {
     private String standID;
     private String location;
     private List<InventoryEntry> localInventory = new ArrayList<>();
+    private double profit;
 
     public MerchStand() {}
 
@@ -14,9 +15,9 @@ public class MerchStand {
         this.standID = standID;
         this.location = location;
         this.localInventory = new ArrayList<>();
+        this.profit = 0;
     }
 
-    // Business Logic: Find an entry by SKU within the list
     public InventoryEntry findEntry(String sku) {
         return localInventory.stream()
                 .filter(e -> e.getSku().equalsIgnoreCase(sku))
@@ -24,11 +25,13 @@ public class MerchStand {
                 .orElse(null);
     }
 
-    // Getters and Setters
     public String getStandID() { return standID; }
     public void setStandID(String standID) { this.standID = standID; }
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
     public List<InventoryEntry> getLocalInventory() { return localInventory; }
     public void setLocalInventory(List<InventoryEntry> localInventory) { this.localInventory = localInventory; }
+    public double getProfit() { return profit;}
+    public void setProfit(double profit) {this.profit += profit;}   
+    public void makeSale(double sale) {this.profit += sale;}
 }

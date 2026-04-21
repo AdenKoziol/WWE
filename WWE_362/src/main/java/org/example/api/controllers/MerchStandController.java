@@ -11,7 +11,6 @@ import java.util.*;
 public class MerchStandController {
     private static final String STANDS_FILE = "WWE_362/src/main/java/org/example/database/MerchStands.json";
 
-    // --- SETUP: Register a new physical location ---
     public static void registerStand(Scanner scanner) {
         System.out.print("Enter Stand ID (e.g. GATE-A-01): ");
         String id = scanner.nextLine();
@@ -25,7 +24,6 @@ public class MerchStandController {
         System.out.println("SUCCESS: Stand " + id + " registered.");
     }
 
-    // --- SALES: The Point of Sale (POS) Logic ---
     public static void processSale(Scanner scanner) {
         List<MerchStand> stands = getAllStands();
         System.out.print("Enter Stand ID: ");
@@ -45,15 +43,14 @@ public class MerchStandController {
         System.out.print("Quantity: ");
         int qty = Integer.parseInt(scanner.nextLine());
 
-        // Find the entry in the list
         InventoryEntry entry = stand.findEntry(sku);
         if (entry != null && entry.getQuantity() >= qty) {
-            // Update the quantity in the list
             entry.setQuantity(entry.getQuantity() - qty);
             
-            // Financial Feedback (Boss Test)
             MerchandiseItem item = MerchController.findItemBySku(sku);
             if (item != null) {
+                double saleAmount = item.getRetailPrice() * qty;
+                stand.makeSale(saleAmount);
                 System.out.printf("SALE RECORDED: Total $%.2f\n", (item.getRetailPrice() * qty));
             }
             
@@ -63,12 +60,12 @@ public class MerchStandController {
         }
     }
 
-    // --- REPORTING: View all inventory at all stands ---
     public static void viewAllStandStocks() {
         List<MerchStand> stands = getAllStands();
         System.out.println("\n--- CURRENT STAND INVENTORY MANIFESTS ---");
         for (MerchStand s : stands) {
-            System.out.println("Stand: " + s.getStandID() + " [" + s.getLocation() + "]");
+            
+            System.out.println("Stand: " + s.getStandID() + " [" + s.getLocation() + "] " + "Total Profit: $" + s.getProfit());
             if (s.getLocalInventory().isEmpty()) {
                 System.out.println("  (Empty)");
             } else {
@@ -79,7 +76,6 @@ public class MerchStandController {
         }
     }
 
-    // --- DATA PERSISTENCE ---
     public static List<MerchStand> getAllStands() {
         try {
             Path path = Paths.get(STANDS_FILE);
@@ -88,7 +84,7 @@ public class MerchStandController {
             if (json.isEmpty() || json.equals("[]")) return new ArrayList<>();
 
             List<MerchStand> list = JsonParser.deserializeList(json, MerchStand.class);
-            list.removeIf(Objects::isNull); // Filter out any corrupted nulls
+            list.removeIf(Objects::isNull); 
             return list;
         } catch (Exception e) {
             return new ArrayList<>();
@@ -119,7 +115,6 @@ public class MerchStandController {
         return;
     }
 
-    // Boss Test: Check if stand still has stock before deleting
     if (!standToDelete.getLocalInventory().isEmpty()) {
         System.out.println("WARNING: This stand still has inventory assigned!");
         System.out.print("Force delete and lose stock records? (y/n): ");

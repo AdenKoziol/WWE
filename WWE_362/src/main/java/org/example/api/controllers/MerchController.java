@@ -19,7 +19,6 @@ public class MerchController {
             System.out.print("Enter SKU: ");
             String sku = scanner.nextLine();
 
-            // SKU Duplicate Check
             if (findItemBySku(sku) != null) {
                 System.out.println("CRITICAL ERROR: SKU " + sku + " already exists in registry.");
                 return;
@@ -77,13 +76,10 @@ public class MerchController {
 
     if (transferQty > item.getGlobalQuantity()) return;
 
-    // --- NEW LIST LOGIC ---
     InventoryEntry entry = targetStand.findEntry(item.getSku());
     if (entry != null) {
-        // Update existing entry
         entry.setQuantity(entry.getQuantity() + transferQty);
     } else {
-        // Add new entry to the list
         targetStand.getLocalInventory().add(new InventoryEntry(item.getSku(), transferQty));
     }
 
@@ -227,11 +223,10 @@ public static void deleteMerchandise(Scanner scanner) {
         writeItems(items);
     }
 
-    // Logic: Ensures the database folder and file exist to prevent IOErrors
     private static void createEmptyFile(Path path) throws IOException {
         if (path.getParent() != null) {
             Files.createDirectories(path.getParent());
         }
-        Files.writeString(path, "[]"); // Initialize as an empty JSON array
+        Files.writeString(path, "[]"); 
     }
 }
