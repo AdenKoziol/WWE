@@ -34,7 +34,6 @@ public class MerchController {
 
             MerchandiseItem item = new MerchandiseItem(getNextID(), name, sku, cost, price, qty);
 
-            // Boss Test: Financial Validation
             if (item.isLowMargin()) {
                 System.out.printf("WARNING: Profit margin is only %.2f%%. Proceed? (y/n): ", item.getProfitMargin());
                 if (!scanner.nextLine().equalsIgnoreCase("y"))
@@ -88,7 +87,6 @@ public class MerchController {
         targetStand.getLocalInventory().add(new InventoryEntry(item.getSku(), transferQty));
     }
 
-    // Update Global Stock
     item.setGlobalQuantity(item.getGlobalQuantity() - transferQty);
 
     writeItems(inventory);
@@ -97,7 +95,6 @@ public class MerchController {
     System.out.println("Transfer successful! " + item.getSku() + " moved to " + sid);
 }
 
-    // Case 3: List all available products
     public static void viewAllInventory() {
         List<MerchandiseItem> items = getAllItems();
         System.out.println("\n--- GLOBAL PRODUCT REGISTRY ---");
@@ -109,7 +106,6 @@ public class MerchController {
         }
     }
 
-    // Case 4: Search by SKU (Specific lookup logic)
     public static void searchBySku(Scanner scanner) {
         System.out.print("Enter SKU to search: ");
         String sku = scanner.nextLine();
@@ -121,7 +117,6 @@ public class MerchController {
         }
     }
 
-    // Case 5: Stock Valuation (The "Boss" Report)
     public static void viewStockValuation() {
         List<MerchandiseItem> items = getAllItems();
         double totalWholesale = 0;
@@ -139,7 +134,6 @@ public class MerchController {
         System.out.println("---------------------------------");
     }
 
-    // Case 6: Low Margin Alerts
     public static void viewLowMarginAlerts() {
         List<MerchandiseItem> items = getAllItems();
         System.out.println("\n--- LOW MARGIN WARNINGS (<15%) ---");
@@ -182,10 +176,50 @@ public class MerchController {
         }
     }
 
-    private static void logAssignment(int id, String booth, int qty) {
-        // In a real system, this would append to BoothAssignment.json
-        System.out.println("AUDIT LOG: Item " + id + " assigned to Booth " + booth + " [Qty: " + qty + "]");
+public static void deleteMerchandise(Scanner scanner) {
+    List<MerchandiseItem> inventory = getAllItems();
+    System.out.print("Enter Merchandise ID to DELETE: ");
+    int id = Integer.parseInt(scanner.nextLine());
+
+    MerchandiseItem itemToDelete = inventory.stream()
+            .filter(i -> i.getID() == id)
+            .findFirst().orElse(null);
+
+    if (itemToDelete == null) {
+        System.out.println("ERROR: Item ID not found.");
+        return;
     }
+
+    String skuToDelete = itemToDelete.getSku();
+
+    System.out.print("CRITICAL: Deleting '" + itemToDelete.getName() + 
+                     "' will remove it from ALL stands. Proceed? (y/n): ");
+    
+    if (scanner.nextLine().equalsIgnoreCase("y")) {
+        inventory.removeIf(i -> i.getID() == id);
+        writeItems(inventory);
+
+        List<MerchStand> allStands = MerchStandController.getAllStands();
+        boolean removedFromStands = false;
+
+        for (MerchStand stand : allStands) {
+            boolean removed = stand.getLocalInventory().removeIf(entry -> 
+                entry.getSku().equalsIgnoreCase(skuToDelete)
+            );
+            if (removed) removedFromStands = true;
+        }
+
+        if (removedFromStands) {
+            MerchStandController.writeStands(allStands);
+            System.out.println("CLEANUP: Item removed from all booth manifests.");
+        }
+
+        System.out.println("SUCCESS: Item " + skuToDelete + " fully purged from system.");
+    } else {
+        System.out.println("Deletion cancelled.");
+    }
+}
+
 
     public static void saveItem(MerchandiseItem item) {
         List<MerchandiseItem> items = getAllItems();

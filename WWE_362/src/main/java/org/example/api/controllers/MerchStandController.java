@@ -104,4 +104,35 @@ public class MerchStandController {
             System.out.println("Persistence Error.");
         }
     }
+
+    public static void deleteStand(Scanner scanner) {
+    List<MerchStand> stands = getAllStands();
+    System.out.print("Enter Stand ID to DELETE (e.g., MAIN-ENT-01): ");
+    String sid = scanner.nextLine();
+
+    MerchStand standToDelete = stands.stream()
+            .filter(s -> s.getStandID().equalsIgnoreCase(sid))
+            .findFirst().orElse(null);
+
+    if (standToDelete == null) {
+        System.out.println("ERROR: Stand ID not found.");
+        return;
+    }
+
+    // Boss Test: Check if stand still has stock before deleting
+    if (!standToDelete.getLocalInventory().isEmpty()) {
+        System.out.println("WARNING: This stand still has inventory assigned!");
+        System.out.print("Force delete and lose stock records? (y/n): ");
+    } else {
+        System.out.print("Confirm deletion of " + sid + "? (y/n): ");
+    }
+
+    if (scanner.nextLine().equalsIgnoreCase("y")) {
+        stands.removeIf(s -> s.getStandID().equalsIgnoreCase(sid));
+        writeStands(stands);
+        System.out.println("SUCCESS: Stand decommissioned.");
+    } else {
+        System.out.println("Deletion cancelled.");
+    }
+}
 }

@@ -19,7 +19,6 @@ public class MerchandiseItem {
         this.globalQuantity = quantity;
     }
 
-    // Logic: Business Intelligence for the "Boss"
     public double getProfitMargin() {
         if (retailPrice <= 0) return 0;
         return ((retailPrice - wholesaleCost) / retailPrice) * 100;
