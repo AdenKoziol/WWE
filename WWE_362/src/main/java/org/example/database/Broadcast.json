@@ -1,0 +1,16 @@
+[
+  {
+    "ID": 1,
+    "eventID": 1,
+    "networkName": "USA Network",
+    "dealAmount": 500000.0,
+    "broadcastType": "Delayed Cable"
+  },
+  {
+    "ID": 2,
+    "eventID": 5,
+    "networkName": "Peacock",
+    "dealAmount": 2000000.0,
+    "broadcastType": "Live PPV"
+  }
+]
