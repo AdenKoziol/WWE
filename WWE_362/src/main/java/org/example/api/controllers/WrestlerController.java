@@ -71,6 +71,18 @@ public class WrestlerController {
         return maxID + 1;
     }
 
+    public static Wrestler getWrestlerByID(int id) {
+        List<Wrestler> wrestlers = getAllWrestlers();
+
+        for (Wrestler wrestler : wrestlers) {
+            if (wrestler.getID() == id) {
+                return wrestler;
+            }
+        }
+
+        return null;
+    }
+
     public static List<Wrestler> getAllWrestlers() {
         try {
             Path path = Paths.get(WRESTLER_FILE);
@@ -141,17 +153,29 @@ public class WrestlerController {
     }
 
     private static boolean stageNameExists(String stageName) {
-    List<Wrestler> wrestlers = getAllWrestlers();
+        List<Wrestler> wrestlers = getAllWrestlers();
 
-    for (Wrestler wrestler : wrestlers) {
-        if (wrestler.getStageName() != null &&
-            wrestler.getStageName().equalsIgnoreCase(stageName)) {
-            return true;
+        for (Wrestler wrestler : wrestlers) {
+            if (wrestler.getStageName() != null &&
+                wrestler.getStageName().equalsIgnoreCase(stageName)) {
+                return true;
+            }
         }
+
+        return false;
     }
 
-    return false;
-}
+    public static void updateWrestlerStatus(int id, boolean active) {
+        List<Wrestler> list = getAllWrestlers();
+
+        for (Wrestler w : list) {
+            if (w.getID() == id) {
+                w.setActive(active);
+                writeWrestlers(list);
+                return;
+            }
+        }
+    }
 
     private static void createEmptyFile(Path path) throws IOException {
         Path parent = path.getParent();

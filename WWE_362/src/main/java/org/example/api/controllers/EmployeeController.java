@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class EmployeeController {
 
-    private static final String EMPLOYEE_FILE = "WWE_362/src/main/java/org/example/database/Employee.json";
+    private static final String EMPLOYEE_FILE = "src/main/java/org/example/database/Employee.json";
 
     public static void createEmployee() {
         Scanner scanner = new Scanner(System.in);
@@ -120,6 +120,30 @@ public class EmployeeController {
             System.out.println(employee);
         }
     }
+
+    public static void displayAllMedicalEmployees() {
+    List<Employee> employees = getAllEmployees();
+
+    if (employees.isEmpty()) {
+        System.out.println("No employees found.");
+        return;
+    }
+
+    boolean found = false;
+
+    for (Employee employee : employees) {
+        if (employee.getEmployeeType() != null &&
+            employee.getEmployeeType().equalsIgnoreCase("Medical")) {
+
+            System.out.println(employee);
+            found = true;
+        }
+    }
+
+    if (!found) {
+        System.out.println("No medical employees found.");
+    }
+}
 
     private static void writeEmployees(List<Employee> employees) {
         try {
