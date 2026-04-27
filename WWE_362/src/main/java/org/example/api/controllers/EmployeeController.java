@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class EmployeeController {
 
-    private static final String EMPLOYEE_FILE = "src/main/java/org/example/database/Employee.json";
+    private static final String EMPLOYEE_FILE = "WWE_362/src/main/java/org/example/database/Employee.json";
 
     public static void createEmployee() {
         Scanner scanner = new Scanner(System.in);
