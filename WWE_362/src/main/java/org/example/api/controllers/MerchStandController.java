@@ -10,7 +10,7 @@ import java.nio.file.*;
 import java.util.*;
 
 public class MerchStandController {
-    private static final String STANDS_FILE = "WWE_362/src/main/java/org/example/database/MerchStands.json";
+    private static final String STANDS_FILE = "src/main/java/org/example/database/MerchStands.json";
 
     public static void registerStand(Scanner scanner) {
         System.out.print("Enter Stand ID (e.g. GATE-A-01): ");

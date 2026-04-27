@@ -10,7 +10,7 @@ import java.nio.file.*;
 import java.util.*;
 
 public class MerchController {
-    private static final String MERCH_FILE = "WWE_362/src/main/java/org/example/database/Merch.json";
+    private static final String MERCH_FILE = "src/main/java/org/example/database/Merch.json";
 
     public static void registerNewItem(Scanner scanner) {
         try {
