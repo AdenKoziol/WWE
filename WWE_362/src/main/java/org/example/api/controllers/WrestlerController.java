@@ -83,6 +83,17 @@ public class WrestlerController {
         return null;
     }
 
+    public static Wrestler getWrestlerByName(String name) {
+        List<Wrestler> wrestlers = getAllWrestlers();
+        for (Wrestler wrestler : wrestlers) {
+            if(wrestler.getStageName().equals(name)) {
+                return wrestler;
+            }
+        }
+
+        return null;
+    }
+
     public static List<Wrestler> getAllWrestlers() {
         try {
             Path path = Paths.get(WRESTLER_FILE);

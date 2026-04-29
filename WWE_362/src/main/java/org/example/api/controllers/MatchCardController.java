@@ -186,6 +186,18 @@ public class MatchCardController {
         }
     }
 
+    public static List<String> getWrestlersByEventID(int eventID) {
+        List<MatchCard> matchCards = getAllMatchCards();
+        List<String> wrestlers = new ArrayList<>();
+        for (MatchCard matchCard : matchCards) {
+            if (matchCard.getEventID() == eventID) {
+                wrestlers.add(matchCard.getWrestler1());
+                wrestlers.add(matchCard.getWrestler2());
+            }
+        }
+        return wrestlers;
+    }
+
     private static void writeMatchCards(List<MatchCard> matchCards) {
         try {
             Path path = Paths.get(MATCH_CARD_FILE);

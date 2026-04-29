@@ -121,7 +121,7 @@ public class EventController {
         }
     }
 
-    public Event getEventByID(int id) {
+    public static Event getEventByID(int id) {
         List<Event> events = getAllEvents();
 
         for (Event event : events) {
