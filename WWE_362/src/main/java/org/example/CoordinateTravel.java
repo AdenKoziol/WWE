@@ -25,6 +25,8 @@ public class CoordinateTravel {
             System.out.println("1. Coordinate Travel for Event");
             System.out.println("2. View Travel for Event");
             System.out.println("3. Cancel Travel for Event");
+            System.out.println("4. Upgrade Wrestler Travel");
+            System.out.println("5. Downgrade Wrestler Travel");
             System.out.println("0. Back");
             System.out.print("Choose an option: ");
 
@@ -39,6 +41,12 @@ public class CoordinateTravel {
                     break;
                 case "3":
                     cancelTravelOption(scanner);
+                    break;
+                case "4":
+                    upgradeWrestlerTravelOption(scanner);
+                    break;
+                case "5":
+                    downgradeWrestlerTravelOption(scanner);
                     break;
                 case "0":
                     return;
@@ -205,6 +213,18 @@ public class CoordinateTravel {
         return null;
     }
 
+    private static Wrestler findWrestlerByID(int wrestlerID) {
+        List<Wrestler> wrestlers = WrestlerController.getAllWrestlers();
+
+        for (Wrestler wrestler : wrestlers) {
+            if (wrestler.getID() == wrestlerID) {
+                return wrestler;
+            }
+        }
+
+        return null;
+    }
+
     private static void coordinateTravelOption(Scanner scanner) {
         try {
             System.out.println("\nEvents:");
@@ -255,6 +275,254 @@ public class CoordinateTravel {
 
         } catch (NumberFormatException e) {
             System.out.println("Invalid input. Event ID must be a whole number.");
+        }
+    }
+
+    private static void upgradeWrestlerTravelOption(Scanner scanner) {
+        changeWrestlerTravelOption(scanner, true);
+    }
+
+    private static void downgradeWrestlerTravelOption(Scanner scanner) {
+        changeWrestlerTravelOption(scanner, false);
+    }
+
+    private static void changeWrestlerTravelOption(Scanner scanner, boolean upgrade) {
+        try {
+            List<Wrestler> wrestlersWithTravel = getWrestlersWithAnyTravel();
+
+            if (wrestlersWithTravel.isEmpty()) {
+                System.out.println("No wrestlers currently have travel.");
+                return;
+            }
+
+            if (upgrade) {
+                System.out.println("\nUpgrade Wrestler Travel");
+            } else {
+                System.out.println("\nDowngrade Wrestler Travel");
+            }
+
+            System.out.println("\nWrestlers with current travel:");
+            for (Wrestler wrestler : wrestlersWithTravel) {
+                System.out.println(
+                        wrestler.getID() + ". " +
+                                wrestler.getRealName() +
+                                " (" + wrestler.getStageName() + ")"
+                );
+            }
+
+            System.out.print("\nEnter Wrestler ID: ");
+            int wrestlerID = Integer.parseInt(scanner.nextLine());
+
+            Wrestler selectedWrestler = findWrestlerByID(wrestlerID);
+
+            if (selectedWrestler == null || !wrestlerHasAnyTravel(selectedWrestler)) {
+                System.out.println("That wrestler does not currently have travel.");
+                return;
+            }
+
+            List<Event> events = getEventsForWrestler(selectedWrestler);
+
+            if (events.isEmpty()) {
+                System.out.println("No events found for this wrestler.");
+                return;
+            }
+
+            System.out.println("\nEvents for " + selectedWrestler.getRealName() + ":");
+
+            for (Event event : events) {
+                Venue venue = VenueController.getVenueByID(event.getVenueID());
+
+                String venueName = "Unknown Venue";
+                String location = "Unknown Location";
+
+                if (venue != null) {
+                    venueName = venue.getName();
+                    location = venue.getLocation();
+                }
+
+                System.out.println(
+                        event.getID() + ". " +
+                                event.getName() +
+                                " | Date: " + event.getDate() +
+                                " | Venue: " + venueName +
+                                " | Location: " + location
+                );
+            }
+
+            System.out.print("\nEnter Event ID: ");
+            int eventID = Integer.parseInt(scanner.nextLine());
+
+            Event selectedEvent = EventController.getEventByID(eventID);
+
+            if (selectedEvent == null) {
+                System.out.println("Event not found.");
+                return;
+            }
+
+            if (!eventHasWrestler(selectedEvent, selectedWrestler.getRealName())
+                    && !eventHasWrestler(selectedEvent, selectedWrestler.getStageName())) {
+                System.out.println("This wrestler is not competing in that event.");
+                return;
+            }
+
+            updateTravelLevelForWrestlerEvent(selectedWrestler, selectedEvent, upgrade);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. ID must be a whole number.");
+        }
+    }
+
+    private static List<Wrestler> getWrestlersWithAnyTravel() {
+        List<Wrestler> wrestlersWithTravel = new ArrayList<>();
+        List<Wrestler> allWrestlers = WrestlerController.getAllWrestlers();
+
+        for (Wrestler wrestler : allWrestlers) {
+            if (wrestlerHasAnyTravel(wrestler) && !wrestlerListContains(wrestlersWithTravel, wrestler)) {
+                wrestlersWithTravel.add(wrestler);
+            }
+        }
+
+        return wrestlersWithTravel;
+    }
+
+    private static boolean wrestlerListContains(List<Wrestler> wrestlers, Wrestler wrestlerToFind) {
+        for (Wrestler wrestler : wrestlers) {
+            if (wrestler.getID() == wrestlerToFind.getID()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean wrestlerHasAnyTravel(Wrestler wrestler) {
+        List<FlightBooking> flights = FlightBookingController.getAllFlightBookings();
+        List<HotelBooking> hotels = HotelBookingController.getAllHotelBookings();
+        List<TransportationBooking> transportationList =
+                TransportationBookingController.getAllTransportationBookings();
+
+        for (FlightBooking flight : flights) {
+            if (bookingBelongsToWrestler(flight.getWrestlerName(), wrestler)) {
+                return true;
+            }
+        }
+
+        for (HotelBooking hotel : hotels) {
+            if (bookingBelongsToWrestler(hotel.getWrestlerName(), wrestler)) {
+                return true;
+            }
+        }
+
+        for (TransportationBooking transportation : transportationList) {
+            if (bookingBelongsToWrestler(transportation.getWrestlerName(), wrestler)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean bookingBelongsToWrestler(String bookedWrestlerName, Wrestler wrestler) {
+        boolean sameRealName = bookedWrestlerName.equalsIgnoreCase(wrestler.getRealName());
+        boolean sameStageName = bookedWrestlerName.equalsIgnoreCase(wrestler.getStageName());
+
+        return sameRealName || sameStageName;
+    }
+
+    private static List<Event> getEventsForWrestler(Wrestler wrestler) {
+        List<Event> events = EventController.getAllEvents();
+        List<Event> wrestlerEvents = new ArrayList<>();
+
+        for (Event event : events) {
+            boolean hasRealName = eventHasWrestler(event, wrestler.getRealName());
+            boolean hasStageName = eventHasWrestler(event, wrestler.getStageName());
+
+            if (hasRealName || hasStageName) {
+                wrestlerEvents.add(event);
+            }
+        }
+
+        return wrestlerEvents;
+    }
+
+    private static void updateTravelLevelForWrestlerEvent(Wrestler wrestler, Event event, boolean upgrade) {
+        Venue venue = VenueController.getVenueByID(event.getVenueID());
+
+        if (venue == null) {
+            System.out.println("Venue not found for this event.");
+            return;
+        }
+
+        FlightBooking flight = findExistingFlight(wrestler, event);
+        HotelBooking hotel = findExistingHotel(wrestler, event, venue);
+        TransportationBooking transportation = findExistingTransportation(wrestler, venue);
+
+        if (flight == null && hotel == null && transportation == null) {
+            System.out.println("No existing travel was found for this wrestler and event.");
+            return;
+        }
+
+        String flightType;
+        String hotelType;
+        String transportationType;
+
+        if (upgrade) {
+            flightType = "Luxury Flight";
+            hotelType = "Luxury Hotel";
+            transportationType = "Luxury Transportation";
+        } else {
+            flightType = "Standard Flight";
+            hotelType = "Standard Hotel";
+            transportationType = "Arena Shuttle";
+        }
+
+        if (flight != null) {
+            FlightBooking updatedFlight = new FlightBooking(
+                    flight.getID(),
+                    wrestler.getRealName(),
+                    venue.getLocation(),
+                    event.getDate(),
+                    flightType
+            );
+
+            if (FlightBookingController.deleteFlightBookingByID(flight.getID())) {
+                FlightBookingController.saveFlightBooking(updatedFlight);
+            }
+        }
+
+        if (hotel != null) {
+            HotelBooking updatedHotel = new HotelBooking(
+                    hotel.getID(),
+                    wrestler.getRealName(),
+                    venue.getLocation(),
+                    event.getDate(),
+                    hotelType
+            );
+
+            if (HotelBookingController.deleteHotelBookingByID(hotel.getID())) {
+                HotelBookingController.saveHotelBooking(updatedHotel);
+            }
+        }
+
+        if (transportation != null) {
+            TransportationBooking updatedTransportation = new TransportationBooking(
+                    transportation.getID(),
+                    wrestler.getRealName(),
+                    venue.getLocation(),
+                    transportationType
+            );
+
+            if (TransportationBookingController.deleteTransportationBookingByID(transportation.getID())) {
+                TransportationBookingController.saveTransportationBooking(updatedTransportation);
+            }
+        }
+
+        if (upgrade) {
+            System.out.println("\nTravel upgraded to luxury for " + wrestler.getRealName()
+                    + " at event: " + event.getName());
+        } else {
+            System.out.println("\nTravel downgraded to standard for " + wrestler.getRealName()
+                    + " at event: " + event.getName());
         }
     }
 
@@ -493,7 +761,7 @@ public class CoordinateTravel {
         for (String wrestlerName : wrestlerNames) {
             Wrestler wrestler = findWrestlerByAnyName(wrestlerName);
 
-            if (wrestler != null) {
+            if (wrestler != null && !wrestlerListContains(wrestlers, wrestler)) {
                 wrestlers.add(wrestler);
             }
         }
@@ -505,11 +773,10 @@ public class CoordinateTravel {
         List<FlightBooking> flights = FlightBookingController.getAllFlightBookings();
 
         for (FlightBooking flight : flights) {
-            boolean sameRealName = flight.getWrestlerName().equalsIgnoreCase(wrestler.getRealName());
-            boolean sameStageName = flight.getWrestlerName().equalsIgnoreCase(wrestler.getStageName());
+            boolean sameWrestler = bookingBelongsToWrestler(flight.getWrestlerName(), wrestler);
             boolean sameDate = flight.getDate().equalsIgnoreCase(event.getDate());
 
-            if ((sameRealName || sameStageName) && sameDate) {
+            if (sameWrestler && sameDate) {
                 return flight;
             }
         }
@@ -521,12 +788,11 @@ public class CoordinateTravel {
         List<HotelBooking> hotels = HotelBookingController.getAllHotelBookings();
 
         for (HotelBooking hotel : hotels) {
-            boolean sameRealName = hotel.getWrestlerName().equalsIgnoreCase(wrestler.getRealName());
-            boolean sameStageName = hotel.getWrestlerName().equalsIgnoreCase(wrestler.getStageName());
+            boolean sameWrestler = bookingBelongsToWrestler(hotel.getWrestlerName(), wrestler);
             boolean sameDate = hotel.getDate().equalsIgnoreCase(event.getDate());
             boolean sameLocation = hotel.getLocation().equalsIgnoreCase(venue.getLocation());
 
-            if ((sameRealName || sameStageName) && sameDate && sameLocation) {
+            if (sameWrestler && sameDate && sameLocation) {
                 return hotel;
             }
         }
@@ -539,11 +805,10 @@ public class CoordinateTravel {
                 TransportationBookingController.getAllTransportationBookings();
 
         for (TransportationBooking transportation : transportationList) {
-            boolean sameRealName = transportation.getWrestlerName().equalsIgnoreCase(wrestler.getRealName());
-            boolean sameStageName = transportation.getWrestlerName().equalsIgnoreCase(wrestler.getStageName());
+            boolean sameWrestler = bookingBelongsToWrestler(transportation.getWrestlerName(), wrestler);
             boolean sameLocation = transportation.getLocation().equalsIgnoreCase(venue.getLocation());
 
-            if ((sameRealName || sameStageName) && sameLocation) {
+            if (sameWrestler && sameLocation) {
                 return transportation;
             }
         }
