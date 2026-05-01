@@ -30,6 +30,9 @@ import java.util.*;
 public class MerchController {
     private static final String MERCH_FILE = "src/main/java/org/example/database/Merch.json";
 
+    // Items whose global warehouse qty is at or below this threshold trigger a restock alert.
+    private static final int RESTOCK_THRESHOLD = 20;
+
     public static void registerNewItem(Scanner scanner) {
         try {
             System.out.print("Enter Item Name: ");
@@ -189,17 +192,329 @@ public class MerchController {
                 .forEach(System.out::println);
     }
 
+    // =========================================================================
+    // FEATURE #1 — SALE REPORT
+    // =========================================================================
+
+    /**
+     * Prints a consolidated sale/revenue report across all merch stands.
+     *
+     * For each stand, shows the revenue accumulated via processSale().
+     * At the bottom, cross-references global items to show revenue potential
+     * vs actual revenue collected — a useful management snapshot.
+     */
+    public static void viewSaleReport() {
+        List<MerchStand> stands = MerchStandController.getAllStands();
+        List<MerchandiseItem> items = getAllItems();
+
+        System.out.println("\n========================================");
+        System.out.println("        WWE MERCH SALES REPORT");
+        System.out.println("========================================");
+
+        if (stands.isEmpty()) {
+            System.out.println("No stands registered.");
+            return;
+        }
+
+        double grandTotal = 0.0;
+
+        System.out.printf("%-20s | %-30s | %s%n", "Stand ID", "Location", "Revenue");
+        System.out.println("-".repeat(68));
+
+        for (MerchStand stand : stands) {
+            double rev = stand.getProfit();
+            grandTotal += rev;
+            System.out.printf("%-20s | %-30s | $%.2f%n",
+                    stand.getStandID(), stand.getLocation(), rev);
+        }
+
+        System.out.println("-".repeat(68));
+        System.out.printf("%-53s $%.2f%n", "TOTAL REVENUE COLLECTED:", grandTotal);
+
+        // --- Potential revenue still on the shelves (stand inventory) ---
+        double standPotential = 0.0;
+        for (MerchStand stand : stands) {
+            for (InventoryEntry entry : stand.getLocalInventory()) {
+                MerchandiseItem globalItem = items.stream()
+                        .filter(i -> i.getSku().equalsIgnoreCase(entry.getSku()))
+                        .findFirst().orElse(null);
+                if (globalItem != null) {
+                    standPotential += globalItem.getRetailPrice() * entry.getQuantity();
+                }
+            }
+        }
+
+        // --- Potential revenue still in the warehouse (global inventory) ---
+        double warehousePotential = items.stream()
+                .mapToDouble(i -> i.getRetailPrice() * i.getGlobalQuantity())
+                .sum();
+
+        System.out.println();
+        System.out.printf("Unsold Stock (Stand Shelves):  $%.2f%n", standPotential);
+        System.out.printf("Unsold Stock (Warehouse):      $%.2f%n", warehousePotential);
+        System.out.printf("Total Remaining Potential:     $%.2f%n", standPotential + warehousePotential);
+        System.out.println("========================================");
+    }
+
+    // =========================================================================
+    // FEATURE #2 — RESTOCK ALERTS
+    // =========================================================================
+
+    /**
+     * Flags items whose warehouse (global) quantity is at or below RESTOCK_THRESHOLD.
+     *
+     * Also shows total stock including stand copies so managers can decide
+     * whether the alert is urgent (near zero everywhere) or merely a warehouse
+     * replenishment call.
+     */
+    public static void viewRestockAlerts() {
+        List<MerchandiseItem> items = getAllItems();
+        List<MerchStand> stands = MerchStandController.getAllStands();
+
+        System.out.println("\n========================================");
+        System.out.println("       RESTOCK ALERT REPORT");
+        System.out.printf ("       (Warehouse qty <= %d units)%n", RESTOCK_THRESHOLD);
+        System.out.println("========================================");
+
+        List<MerchandiseItem> lowStock = new ArrayList<>();
+        for (MerchandiseItem item : items) {
+            if (item.getGlobalQuantity() <= RESTOCK_THRESHOLD) {
+                lowStock.add(item);
+            }
+        }
+
+        if (lowStock.isEmpty()) {
+            System.out.println("All items are sufficiently stocked. No alerts.");
+            System.out.println("========================================");
+            return;
+        }
+
+        System.out.printf("%-5s | %-30s | %-10s | %-12s | %-12s | %s%n",
+                "ID", "Name", "SKU", "Warehouse Qty", "Stand Total", "STATUS");
+        System.out.println("-".repeat(86));
+
+        for (MerchandiseItem item : lowStock) {
+            // Sum up all stand copies of this SKU
+            int standTotal = stands.stream()
+                    .flatMap(s -> s.getLocalInventory().stream())
+                    .filter(e -> e.getSku().equalsIgnoreCase(item.getSku()))
+                    .mapToInt(InventoryEntry::getQuantity)
+                    .sum();
+
+            int warehouseQty = item.getGlobalQuantity();
+            String status;
+            if (warehouseQty == 0 && standTotal == 0) {
+                status = "*** OUT OF STOCK ***";
+            } else if (warehouseQty == 0) {
+                status = "! WAREHOUSE EMPTY";
+            } else {
+                status = "LOW — ORDER SOON";
+            }
+
+            System.out.printf("%-5d | %-30s | %-10s | %-13d | %-12d | %s%n",
+                    item.getID(), truncate(item.getName(), 30), item.getSku(),
+                    warehouseQty, standTotal, status);
+        }
+
+        System.out.println("========================================");
+    }
+
+    // =========================================================================
+    // FEATURE #3 — STRIP DECORATIONS
+    // =========================================================================
+
+    /**
+     * Strips all decorator labels from an item's name and resets its retail price
+     * to its wholesale cost plus a user-supplied base margin, saving it as a
+     * plain BasicMerchandiseItem.
+     *
+     * Because decorators are flattened to JSON (names/prices baked in), stripping
+     * works by: (1) parsing known decorator prefixes from the name string, and
+     * (2) asking the user to confirm or override the restored base retail price.
+     *
+     * This is the deliberate trade-off of our flatten-on-save persistence strategy:
+     * decorator metadata isn't stored separately, so stripping is done on the
+     * rendered name and we let the manager correct the base price manually.
+     */
+    public static void stripDecorations(Scanner scanner) {
+        List<MerchandiseItem> inventory = getAllItems();
+
+        System.out.println("\n--- STRIP DECORATIONS ---");
+        System.out.println("This removes all decorator labels (AUTOGRAPHED, LIMITED EDITION,");
+        System.out.println("discount tags) from an item and resets it to a plain base item.");
+        System.out.println();
+
+        // Show only items that appear to have decorator prefixes
+        List<MerchandiseItem> decorated = new ArrayList<>();
+        for (MerchandiseItem item : inventory) {
+            if (hasDecoratorPrefix(item.getName())) {
+                decorated.add(item);
+            }
+        }
+
+        if (decorated.isEmpty()) {
+            System.out.println("No decorated items found in inventory.");
+            return;
+        }
+
+        System.out.printf("%-5s | %-40s | %-10s | %-8s%n", "ID", "Current Name", "SKU", "Price");
+        System.out.println("-".repeat(68));
+        for (MerchandiseItem item : decorated) {
+            System.out.printf("%-5d | %-40s | %-10s | $%.2f%n",
+                    item.getID(), truncate(item.getName(), 40), item.getSku(), item.getRetailPrice());
+        }
+
+        System.out.print("\nEnter Item ID to strip: ");
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID.");
+            return;
+        }
+
+        MerchandiseItem target = inventory.stream()
+                .filter(i -> i.getID() == id)
+                .findFirst().orElse(null);
+
+        if (target == null) {
+            System.out.println("ERROR: Item ID not found.");
+            return;
+        }
+
+        if (!hasDecoratorPrefix(target.getName())) {
+            System.out.println("Item '" + target.getName() + "' has no decorator labels to strip.");
+            return;
+        }
+
+        // Strip all known decorator prefixes from the name
+        String strippedName = stripAllPrefixes(target.getName());
+        System.out.println();
+        System.out.println("  Current name  : " + target.getName());
+        System.out.println("  Stripped name : " + strippedName);
+        System.out.printf ("  Current price : $%.2f%n", target.getRetailPrice());
+        System.out.printf ("  Wholesale cost: $%.2f%n", target.getWholesaleCost());
+        System.out.println();
+        System.out.println("NOTE: Decorator price adjustments are baked into the current price.");
+        System.out.printf ("Enter the restored base retail price (or press Enter to keep $%.2f): ",
+                target.getWholesaleCost());
+
+        double restoredPrice;
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty()) {
+            restoredPrice = target.getWholesaleCost();
+        } else {
+            try {
+                restoredPrice = Double.parseDouble(input);
+                if (restoredPrice <= 0) {
+                    System.out.println("Price must be positive. Aborting.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid price. Aborting.");
+                return;
+            }
+        }
+
+        // Build the clean BasicMerchandiseItem and overwrite
+        BasicMerchandiseItem stripped = new BasicMerchandiseItem(
+                target.getID(),
+                strippedName,
+                target.getSku(),
+                target.getWholesaleCost(),
+                restoredPrice,
+                target.getGlobalQuantity()
+        );
+
+        if (stripped.isLowMargin()) {
+            System.out.printf("WARNING: Restored margin is %.2f%%. Proceed? (y/n): ",
+                    stripped.getProfitMargin());
+            if (!scanner.nextLine().equalsIgnoreCase("y")) {
+                System.out.println("Strip cancelled.");
+                return;
+            }
+        }
+
+        final int targetId = id;
+        inventory.removeIf(i -> i.getID() == targetId);
+        inventory.add(stripped);
+        writeItems(inventory);
+
+        System.out.println("SUCCESS: Decorations stripped.");
+        System.out.println("  Name  : " + stripped.getName());
+        System.out.printf ("  Price : $%.2f%n", stripped.getRetailPrice());
+        System.out.printf ("  Margin: %.2f%%%n", stripped.getProfitMargin());
+    }
+
+    /**
+     * Returns true if the item name starts with any known decorator bracket prefix.
+     */
+    private static boolean hasDecoratorPrefix(String name) {
+        if (name == null) return false;
+        return name.startsWith("[AUTOGRAPHED")
+                || name.startsWith("[LIMITED EDITION]")
+                || name.matches("^\\[\\d+(\\.\\d+)?% OFF].*");
+    }
+
+    /**
+     * Iteratively removes all leading decorator prefixes from a name string.
+     * Handles stacked decorators in any order.
+     *
+     * Known prefixes:
+     *   [AUTOGRAPHED by <name>]
+     *   [LIMITED EDITION]
+     *   [<N>% OFF]
+     */
+    private static String stripAllPrefixes(String name) {
+        String result = name.trim();
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+
+            // Strip [AUTOGRAPHED by ...] prefix
+            if (result.startsWith("[AUTOGRAPHED by ")) {
+                int close = result.indexOf(']');
+                if (close != -1) {
+                    result = result.substring(close + 1).trim();
+                    changed = true;
+                }
+            }
+
+            // Strip [LIMITED EDITION] prefix
+            if (result.startsWith("[LIMITED EDITION]")) {
+                result = result.substring("[LIMITED EDITION]".length()).trim();
+                changed = true;
+            }
+
+            // Strip [<N>% OFF] prefix — e.g. [30% OFF] or [20.5% OFF]
+            if (result.matches("^\\[\\d+(\\.\\d+)?% OFF].*")) {
+                int close = result.indexOf(']');
+                if (close != -1) {
+                    result = result.substring(close + 1).trim();
+                    changed = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Truncates a string to maxLen chars, appending "…" if cut. */
+    private static String truncate(String s, int maxLen) {
+        if (s == null) return "";
+        return s.length() <= maxLen ? s : s.substring(0, maxLen - 1) + "…";
+    }
+
+    // =========================================================================
+    // Existing helpers — unchanged
+    // =========================================================================
+
     public static MerchandiseItem findItemBySku(String sku) {
         return getAllItems().stream()
-                .filter(i -> i.getSku().equals(sku))
+                .filter(i -> i.getSku().equalsIgnoreCase(sku))
                 .findFirst().orElse(null);
     }
 
-    private static int getNextID() {
-        return getAllItems().stream().mapToInt(MerchandiseItem::getID).max().orElse(0) + 1;
-    }
-
-    private static List<MerchandiseItem> getAllItems() {
+    public static List<MerchandiseItem> getAllItems() {
         try {
             Path path = Paths.get(MERCH_FILE);
             if (!Files.exists(path)) {
@@ -272,22 +587,19 @@ public class MerchController {
 
     public static void saveItem(MerchandiseItem item) {
         List<MerchandiseItem> items = getAllItems();
-        // Flatten the decorator chain into a plain BasicMerchandiseItem before persisting.
-        // Decorators wrap each other in memory but cannot round-trip through JSON --
-        // the final computed name and retail price are saved directly on the base object.
         BasicMerchandiseItem flat = new BasicMerchandiseItem(
                 item.getID(),
-                item.getName(),         // decorated name e.g. "[LIMITED EDITION] [AUTOGRAPHED by X] ..."
+                item.getName(),
                 item.getSku(),
                 item.getWholesaleCost(),
-                item.getRetailPrice(),  // decorated price with all markups/discounts applied
+                item.getRetailPrice(),
                 item.getGlobalQuantity()
         );
         items.add(flat);
         writeItems(items);
     }
 
-    public static void redecoratItem(Scanner scanner) {
+    public static void redecorateItem(Scanner scanner) {
         List<MerchandiseItem> inventory = getAllItems();
 
         System.out.println("--- REDECORATE ITEM ---");
@@ -320,7 +632,6 @@ public class MerchController {
         System.out.println("Wholesale cost (locked): $" + String.format("%.2f", target.getWholesaleCost()));
         System.out.println("Note: decorations will be applied on top of the current retail price.");
 
-        // Wrap with decorators exactly as in registerNewItem
         MerchandiseItem updated = target;
 
         System.out.print("Apply autograph? (y/n): ");
@@ -375,7 +686,6 @@ public class MerchController {
             }
         }
 
-        // Flatten and overwrite the entry in the inventory list
         final int targetId = id;
         inventory.removeIf(i -> i.getID() == targetId);
         BasicMerchandiseItem flat = new BasicMerchandiseItem(
@@ -393,6 +703,11 @@ public class MerchController {
         System.out.println("  Name : " + flat.getName());
         System.out.printf ("  Price: $%.2f%n", flat.getRetailPrice());
         System.out.printf ("  Margin: %.2f%%%n", flat.getProfitMargin());
+    }
+
+    private static int getNextID() {
+        List<MerchandiseItem> items = getAllItems();
+        return items.stream().mapToInt(MerchandiseItem::getID).max().orElse(0) + 1;
     }
 
     private static void createEmptyFile(Path path) throws IOException {
