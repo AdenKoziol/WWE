@@ -1,23 +1,5 @@
 package org.example.models;
 
-/**
- * DECORATOR PATTERN - Concrete Decorator #1
- *
- * AutographedDecorator wraps any MerchandiseItem and adds an autograph surcharge.
- * It overrides getName() and getRetailPrice() to reflect the upgrade,
- * while all other behavior (SKU, quantity, wholesale cost) is delegated
- * transparently to the wrapped item via MerchandiseDecorator.
- *
- * Usage example in MerchController:
- *   MerchandiseItem base = new BasicMerchandiseItem(id, "John Cena Shirt", "JC-001", 12.00, 30.00, 50);
- *   MerchandiseItem autographed = new AutographedDecorator(base, "John Cena", 25.00);
- *   // autographed.getName()        → "[AUTOGRAPHED by John Cena] John Cena Shirt"
- *   // autographed.getRetailPrice() → 55.00
- *
- * Decorators can be stacked:
- *   MerchandiseItem limitedAutograph = new LimitedEditionDecorator(autographed, 10.00);
- *   // limitedAutograph.getRetailPrice() → 65.00
- */
 public class AutographedDecorator extends MerchandiseDecorator {
 
     private final String signedBy;
