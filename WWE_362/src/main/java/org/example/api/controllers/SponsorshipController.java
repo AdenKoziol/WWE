@@ -1,62 +1,44 @@
 package org.example.api.controllers;
 
-import org.example.api.JsonParser;
 import org.example.models.Event;
 import org.example.models.Sponsor;
 import org.example.models.Sponsorship;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
-public class SponsorshipController {
+public class SponsorshipController extends AbstractController<Sponsorship> {
 
     private static final String SPONSORSHIP_FILE = "src/main/java/org/example/database/Sponsorship.json";
 
+    @Override
+    protected String getFilePath() {
+        return SPONSORSHIP_FILE;
+    }
+
+    @Override
+    protected Class<Sponsorship> getType() {
+        return Sponsorship.class;
+    }
+
+    @Override
+    protected int getID(Sponsorship sponsorship) {
+        return sponsorship.getID();
+    }
+
     public static void saveSponsorship(Sponsorship sponsorship) {
-        List<Sponsorship> sponsorships = getAllSponsorships();
+        SponsorshipController controller = new SponsorshipController();
+        List<Sponsorship> sponsorships = controller.getAll();
         sponsorships.add(sponsorship);
-        writeSponsorships(sponsorships);
+        controller.writeAll(sponsorships);
     }
 
     public static int getNextID() {
-        List<Sponsorship> sponsorships = getAllSponsorships();
-
-        int maxID = 0;
-
-        for (Sponsorship sponsorship : sponsorships) {
-            if (sponsorship.getID() > maxID) {
-                maxID = sponsorship.getID();
-            }
-        }
-
-        return maxID + 1;
+        SponsorshipController controller = new SponsorshipController();
+        return controller.getNextID(controller.getAll());
     }
 
     public static List<Sponsorship> getAllSponsorships() {
-        try {
-            Path path = Paths.get(SPONSORSHIP_FILE);
-
-            if (!Files.exists(path)) {
-                createEmptySponsorshipFile(path);
-                return new ArrayList<>();
-            }
-
-            String json = Files.readString(path).trim();
-
-            if (json.isEmpty()) {
-                return new ArrayList<>();
-            }
-
-            List<Sponsorship> sponsorships = JsonParser.deserializeList(json, Sponsorship.class);
-            return sponsorships != null ? sponsorships : new ArrayList<>();
-
-        } catch (IOException e) {
-            System.out.println("Error reading sponsorship file.");
-            return new ArrayList<>();
-        }
+        SponsorshipController controller = new SponsorshipController();
+        return controller.getAll();
     }
 
     public Sponsorship getSponsorshipByID(int id) {
@@ -72,14 +54,15 @@ public class SponsorshipController {
     }
 
     public static boolean deleteSponsorshipByID(int id) {
-        List<Sponsorship> sponsorships = getAllSponsorships();
+        SponsorshipController controller = new SponsorshipController();
+        List<Sponsorship> sponsorships = controller.getAll();
 
         for (int i = 0; i < sponsorships.size(); i++) {
             Sponsorship sponsorship = sponsorships.get(i);
 
             if (sponsorship.getID() == id) {
                 sponsorships.remove(i);
-                writeSponsorships(sponsorships);
+                controller.writeAll(sponsorships);
                 return true;
             }
         }
@@ -88,7 +71,8 @@ public class SponsorshipController {
     }
 
     public static boolean updateSponsorship(int id, double newAmount, String newStatus) {
-        List<Sponsorship> sponsorships = getAllSponsorships();
+        SponsorshipController controller = new SponsorshipController();
+        List<Sponsorship> sponsorships = controller.getAll();
 
         for (Sponsorship sponsorship : sponsorships) {
             if (sponsorship.getID() == id) {
@@ -102,7 +86,7 @@ public class SponsorshipController {
 
                 sponsorship.setAmount(newAmount);
                 sponsorship.setStatus(newStatus);
-                writeSponsorships(sponsorships);
+                controller.writeAll(sponsorships);
                 return true;
             }
         }
@@ -168,31 +152,5 @@ public class SponsorshipController {
         }
 
         return sponsorship;
-    }
-
-    private static void writeSponsorships(List<Sponsorship> sponsorships) {
-        try {
-            Path path = Paths.get(SPONSORSHIP_FILE);
-
-            if (!Files.exists(path)) {
-                createEmptySponsorshipFile(path);
-            }
-
-            String json = JsonParser.serialize(sponsorships);
-            Files.writeString(path, json);
-
-        } catch (IOException e) {
-            System.out.println("Error writing sponsorship file.");
-        }
-    }
-
-    private static void createEmptySponsorshipFile(Path path) throws IOException {
-        Path parent = path.getParent();
-
-        if (parent != null && !Files.exists(parent)) {
-            Files.createDirectories(parent);
-        }
-
-        Files.writeString(path, "[]");
     }
 }
