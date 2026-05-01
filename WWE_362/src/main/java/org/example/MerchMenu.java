@@ -16,25 +16,26 @@ public class MerchMenu {
             System.out.println("2. Configure New Merch Stand");
             System.out.println("3. Delete Merchandise Item");
             System.out.println("4. Delete Merch Stand");
+            System.out.println("5. Redecorate Existing Item");
 
             System.out.println("\n[LOGISTICS & SALES]");
-            System.out.println("5. Assign Stock to Stand (Warehouse -> Stand)");
-            System.out.println("6. Process Live Sale");
-            System.out.println("7. View Stand Inventory Manifests");
+            System.out.println("6. Assign Stock to Stand (Warehouse -> Stand)");
+            System.out.println("7. Process Live Sale");
+            System.out.println("8. View Stand Inventory Manifests");
 
             System.out.println("\n[INVENTORY & REPORTING]");
-            System.out.println("8. View Global Inventory (All Products)");
-            System.out.println("9. Search Product by SKU");
-            System.out.println("10. Financial Stock Valuation Report");
-            System.out.println("11. View Low Margin Alerts");
+            System.out.println("9.  View Global Inventory (All Products)");
+            System.out.println("10. Search Product by SKU");
+            System.out.println("11. Financial Stock Valuation Report");
+            System.out.println("12. View Low Margin Alerts");
 
             System.out.println("\n[STAFFING]");
-            System.out.println("12. Create Employee");
-            System.out.println("13. View All Employees");
-            System.out.println("14. Delete Employee");
-            System.out.println("15. Assign Employee To Stand");
-            System.out.println("16. Remove Employee From Stand");
-            System.out.println("17. View Stand Staffing Assignments");
+            System.out.println("13. Create Employee");
+            System.out.println("14. View All Employees");
+            System.out.println("15. Delete Employee");
+            System.out.println("16. Assign Employee To Stand");
+            System.out.println("17. Remove Employee From Stand");
+            System.out.println("18. View Stand Staffing Assignments");
 
             System.out.println("0. Back");
             System.out.print("\nSelection: ");
@@ -54,34 +55,36 @@ public class MerchMenu {
                     MerchStandController.deleteStand(scanner);
                     break;
                 case "5":
-                    MerchController.assignToBooth(scanner);
+                    MerchController.redecoratItem(scanner);
                     break;
                 case "6":
-                    MerchStandController.processSale(scanner);
+                    MerchController.assignToBooth(scanner);
                     break;
                 case "7":
-                    MerchStandController.viewAllStandStocks();
+                    MerchStandController.processSale(scanner);
                     break;
                 case "8":
-                    MerchController.viewAllInventory();
+                    MerchStandController.viewAllStandStocks();
                     break;
                 case "9":
-                    MerchController.searchBySku(scanner);
+                    MerchController.viewAllInventory();
                     break;
                 case "10":
-                    MerchController.viewStockValuation();
+                    MerchController.searchBySku(scanner);
                     break;
                 case "11":
+                    MerchController.viewStockValuation();
+                    break;
+                case "12":
                     MerchController.viewLowMarginAlerts();
                     break;
-
-                case "12":
+                case "13":
                     EmployeeController.createEmployee();
                     break;
-                case "13":
+                case "14":
                     EmployeeController.displayAllEmployees();
                     break;
-                case "14":
+                case "15":
                     System.out.print("Enter employee ID to delete: ");
                     try {
                         int id = Integer.parseInt(scanner.nextLine());
@@ -96,23 +99,20 @@ public class MerchMenu {
                         System.out.println("Invalid ID.");
                     }
                     break;
-                case "15":
+                case "16":
                     MerchStandController.assignEmployeeToStand(scanner);
                     break;
-                case "16":
+                case "17":
                     removeEmployeeFromStand(scanner);
                     break;
-
-                case "17":
+                case "18":
                     MerchStandController.viewAllStandStocks();
                     break;
-
                 case "0":
                     return;
                 default:
                     System.out.println("Invalid Option. Please try again.");
             }
-
         }
     }
 

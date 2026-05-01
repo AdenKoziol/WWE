@@ -52,7 +52,7 @@ public class MerchStandController {
             if (item != null) {
                 double saleAmount = item.getRetailPrice() * qty;
                 stand.makeSale(saleAmount);
-                System.out.printf("SALE RECORDED: Total $%.2f\n", (item.getRetailPrice() * qty));
+                System.out.printf("SALE RECORDED: Total $%.2f\n", saleAmount);
             }
 
             writeStands(stands);
@@ -63,17 +63,55 @@ public class MerchStandController {
 
     public static void viewAllStandStocks() {
         List<MerchStand> stands = getAllStands();
-        System.out.println("\n--- MERCH STAND OPERATIONAL REPORT ---");
-        for (MerchStand s : stands) {
-            System.out.println("Stand: " + s.getStandID() + " (" + s.getLocation() + ")");
 
-            // Display Staff
-            String staffNames = s.getStaffOnShift().isEmpty() ? "No Staff Assigned"
-                    : s.getStaffOnShift().stream().map(Employee::getName).reduce((a, b) -> a + ", " + b).get();
-            System.out.println("  Staff: " + staffNames);
-            System.out.println("  Revenue: $" + s.getProfit());
-            System.out.println("  Inventory: " + s.getLocalInventory().size() + " items stocked.");
-            System.out.println("------------------------------------------");
+        System.out.println("\n========================================");
+        System.out.println("     MERCH STAND OPERATIONAL REPORT");
+        System.out.println("========================================");
+
+        if (stands.isEmpty()) {
+            System.out.println("No stands registered.");
+            return;
+        }
+
+        for (MerchStand stand : stands) {
+            System.out.println("\nStand: " + stand.getStandID() + " (" + stand.getLocation() + ")");
+
+            // Staff display
+            String staffNames = stand.getStaffOnShift() == null || stand.getStaffOnShift().isEmpty()
+                    ? "No Staff Assigned"
+                    : stand.getStaffOnShift().stream()
+                            .map(Employee::getName)
+                            .reduce((a, b) -> a + ", " + b)
+                            .orElse("No Staff Assigned");
+            System.out.println("  Staff    : " + staffNames);
+            System.out.printf ("  Revenue  : $%.2f%n", stand.getProfit());
+
+            // Inventory display
+            List<InventoryEntry> inventory = stand.getLocalInventory();
+            if (inventory == null || inventory.isEmpty()) {
+                System.out.println("  Inventory: No items stocked.");
+            } else {
+                System.out.println("  Inventory:");
+                System.out.printf("    %-12s | %-30s | %-8s | %s%n",
+                        "SKU", "Name", "Price", "Qty");
+                System.out.println("    " + "-".repeat(62));
+
+                for (InventoryEntry entry : inventory) {
+                    // Cross-reference the SKU against the global item registry
+                    // to get the full item name and retail price (including decorator labels/prices)
+                    MerchandiseItem globalItem = MerchController.findItemBySku(entry.getSku());
+
+                    String displayName  = (globalItem != null) ? globalItem.getName()  : "(Unknown Item)";
+                    String displayPrice = (globalItem != null)
+                            ? String.format("$%.2f", globalItem.getRetailPrice())
+                            : "N/A";
+
+                    System.out.printf("    %-12s | %-30s | %-8s | %d%n",
+                            entry.getSku(), displayName, displayPrice, entry.getQuantity());
+                }
+            }
+
+            System.out.println("  " + "-".repeat(64));
         }
     }
 
@@ -152,16 +190,13 @@ public class MerchStandController {
         System.out.print("Enter Employee ID to assign: ");
         int empID = Integer.parseInt(scanner.nextLine());
 
-        // Lookup the employee from the global Employee list
         Employee emp = EmployeeController.getEmployeeByID(empID);
 
         if (emp != null) {
-            // Prevent duplicate assignments
             if (stand.getStaffOnShift().stream().anyMatch(e -> e.getID() == empID)) {
                 System.out.println("Employee is already assigned to this stand.");
                 return;
             }
-
             stand.getStaffOnShift().add(emp);
             writeStands(stands);
             System.out.println("SUCCESS: " + emp.getName() + " assigned to " + sid);
@@ -177,11 +212,10 @@ public class MerchStandController {
             if (stand.getStandID().equalsIgnoreCase(standID)) {
                 if (stand.getStaffOnShift() != null) {
                     boolean removed = stand.getStaffOnShift().removeIf(e -> e.getID() == employeeID);
-
                     if (removed) {
                         foundAndRemoved = true;
-                        writeStands(stands); 
-                        break; 
+                        writeStands(stands);
+                        break;
                     }
                 }
             }
@@ -194,11 +228,8 @@ public class MerchStandController {
         boolean changesMade = false;
 
         for (MerchStand stand : allStands) {
-            // Use removeIf to purge any employee matching the ID
             boolean removed = stand.getStaffOnShift().removeIf(e -> e.getID() == employeeID);
-            if (removed) {
-                changesMade = true;
-            }
+            if (removed) changesMade = true;
         }
 
         if (changesMade) {

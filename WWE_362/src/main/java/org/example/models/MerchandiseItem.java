@@ -1,44 +1,36 @@
 package org.example.models;
 
-public class MerchandiseItem {
-    private int ID;
-    private String name;
-    private String sku;
-    private double wholesaleCost;
-    private double retailPrice;
-    private int globalQuantity;
+/**
+ * DECORATOR PATTERN - Component Interface
+ *
+ * MerchandiseItem is now an interface rather than a concrete class.
+ * This is the "Component" role in the Decorator pattern.
+ *
+ * Both BasicMerchandiseItem (the base object) and all decorators
+ * (AutographedDecorator, LimitedEditionDecorator) implement this interface,
+ * meaning they are all interchangeable wherever MerchandiseItem is used.
+ *
+ * The rest of the system (MerchController, MerchStandController) types against
+ * this interface and requires NO changes — they simply call these methods
+ * and get the decorated behavior transparently.
+ */
+public interface MerchandiseItem {
 
-    public MerchandiseItem() {}
+    int getID();
+    String getName();
+    String getSku();
+    double getRetailPrice();
+    double getWholesaleCost();
+    int getGlobalQuantity();
+    void setGlobalQuantity(int qty);
 
-    public MerchandiseItem(int ID, String name, String sku, double wholesale, double retail, int quantity) {
-        this.ID = ID;
-        this.name = name;
-        this.sku = sku;
-        this.wholesaleCost = wholesale;
-        this.retailPrice = retail;
-        this.globalQuantity = quantity;
+    default double getProfitMargin() {
+        double retail = getRetailPrice();
+        if (retail <= 0) return 0;
+        return ((retail - getWholesaleCost()) / retail) * 100;
     }
 
-    public double getProfitMargin() {
-        if (retailPrice <= 0) return 0;
-        return ((retailPrice - wholesaleCost) / retailPrice) * 100;
-    }
-
-    public boolean isLowMargin() {
+    default boolean isLowMargin() {
         return getProfitMargin() < 15.0;
     }
-
-    public int getID() { return ID; }
-    public String getSku() { return sku; }
-    public int getGlobalQuantity() { return globalQuantity; }
-    public void setGlobalQuantity(int qty) { this.globalQuantity = qty; }
-    public String getName() { return name; }
-    public double getRetailPrice() { return retailPrice; }
-    public double getWholesaleCost() { return wholesaleCost; }
-
-    @Override
-    public String toString() {
-        return String.format("ID: %d | %-15s | SKU: %-8s | Margin: %.2f%% | Stock: %d", 
-                ID, name, sku, getProfitMargin(), globalQuantity);
-    }
-} 
+}
