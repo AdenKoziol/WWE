@@ -4,6 +4,7 @@ public class Employee {
     private int ID;
     private String name;
     private String employeeType;
+    private String employeeRole;
 
     public Employee() {
     }
@@ -12,6 +13,14 @@ public class Employee {
         this.ID = ID;
         this.name = name;
         this.employeeType = employeeType;
+        this.employeeRole = "";
+    }
+
+    public Employee(int ID, String name, String employeeType, String employeeRole) {
+        this.ID = ID;
+        this.name = name;
+        this.employeeType = employeeType;
+        this.employeeRole = employeeRole;
     }
 
     public int getID() {
@@ -38,12 +47,21 @@ public class Employee {
         this.employeeType = employeeType;
     }
 
+    public String getEmployeeRole() {
+        return employeeRole;
+    }
+
+    public void setEmployeeRole(String employeeRole) {
+        this.employeeRole = employeeRole;
+    }
+
     @Override
     public String toString() {
         return "Employee{" +
                 "ID=" + ID +
                 ", name='" + name + '\'' +
                 ", employeeType='" + employeeType + '\'' +
+                ", employeeRole='" + employeeRole + '\'' +
                 '}';
     }
 }

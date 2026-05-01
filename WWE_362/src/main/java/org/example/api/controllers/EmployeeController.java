@@ -36,6 +36,27 @@ public class EmployeeController {
         }
     }
 
+    public static void createSecurityEmployee() {
+        Scanner scanner = new Scanner(System.in);
+
+        try {
+            System.out.print("Enter employee name: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Enter security role (Guard/Supervisor/Chief): ");
+            String role = scanner.nextLine();
+
+            Employee employee = new Employee(getNextID(), name, "Security", role);
+
+            saveEmployee(employee);
+            System.out.println("Security employee created successfully.");
+            System.out.println(employee);
+
+        } catch (Exception e) {
+            System.out.println("Invalid input. Employee could not be created.");
+        }
+    }
+
     public static void saveEmployee(Employee employee) {
         List<Employee> employees = getAllEmployees();
         employees.add(employee);
@@ -122,28 +143,50 @@ public class EmployeeController {
     }
 
     public static void displayAllMedicalEmployees() {
-    List<Employee> employees = getAllEmployees();
+        List<Employee> employees = getAllEmployees();
 
-    if (employees.isEmpty()) {
-        System.out.println("No employees found.");
-        return;
-    }
+        if (employees.isEmpty()) {
+            System.out.println("No employees found.");
+            return;
+        }
 
-    boolean found = false;
+        boolean found = false;
 
-    for (Employee employee : employees) {
-        if (employee.getEmployeeType() != null &&
-            employee.getEmployeeType().equalsIgnoreCase("Medical")) {
+        for (Employee employee : employees) {
+            if (employee.getEmployeeType() != null &&
+                employee.getEmployeeType().equalsIgnoreCase("Medical")) {
+                System.out.println(employee);
+                found = true;
+            }
+        }
 
-            System.out.println(employee);
-            found = true;
+        if (!found) {
+            System.out.println("No medical employees found.");
         }
     }
 
-    if (!found) {
-        System.out.println("No medical employees found.");
+    public static void displayAllSecurityEmployees() {
+        List<Employee> employees = getAllEmployees();
+
+        if (employees.isEmpty()) {
+            System.out.println("No employees found.");
+            return;
+        }
+
+        boolean found = false;
+
+        for (Employee employee : employees) {
+            if (employee.getEmployeeType() != null &&
+                employee.getEmployeeType().equalsIgnoreCase("Security")) {
+                System.out.println(employee);
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("No security employees found.");
+        }
     }
-}
 
     private static void writeEmployees(List<Employee> employees) {
         try {
