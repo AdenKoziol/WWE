@@ -1,6 +1,7 @@
 package org.example.api.controllers;
 
 import org.example.api.JsonParser;
+import org.example.api.handlers.*;
 import org.example.models.BroadcastDeal;
 import org.example.models.Event;
 
@@ -36,27 +37,38 @@ public class BroadcastController {
             String typeChoice = scanner.nextLine();
             String type = typeChoice.equals("1") ? "Live PPV" : "Delayed Cable";
 
-            if (type.equals("Live PPV") && hasExclusiveLiveDeal(eventID)) {
-                System.out.println("Conflict Error: Live broadcasting rights are already sold for this event.");
-                return;
-            }
-
             System.out.print("Enter Network Name (e.g., Peacock): ");
             String network = scanner.nextLine();
 
             System.out.print("Enter Deal Amount: $");
             double amount = Double.parseDouble(scanner.nextLine());
 
-            BroadcastDeal deal = new BroadcastDeal(getNextID(), eventID, network, amount, type);
+            BroadcastDeal pendingDeal = new BroadcastDeal(getNextID(), eventID, network, amount, type);
             
-            if (deal.hasMissingInfo()) {
+            if (pendingDeal.hasMissingInfo()) {
                 System.out.println("Missing required information. Deal cancelled.");
                 return;
             }
 
-            saveDeal(deal);
-            System.out.println("\nBroadcast Deal Registered Successfully!");
-            System.out.println(deal);
+            // --- CHAIN OF RESPONSIBILITY PIPELINE ---
+            BroadcastHandler exclusivity = new ExclusivityHandler();
+            BroadcastHandler financial = new FinancialHandler();
+            BroadcastHandler executive = new ExecutiveHandler();
+
+            // Link the chain together
+            exclusivity.setNext(financial).setNext(executive);
+
+            // Pass the deal into the head of the chain
+            System.out.println("\n--- Initiating Deal Approval Pipeline ---");
+            boolean isApproved = exclusivity.handle(pendingDeal);
+
+            if (isApproved) {
+                saveDeal(pendingDeal);
+                System.out.println("Broadcast Deal Approved and Registered Successfully!");
+                System.out.println(pendingDeal);
+            } else {
+                System.out.println("Transaction Aborted: Deal was rejected by the approval pipeline.");
+            }
 
         } catch (NumberFormatException e) {
             System.out.println("Invalid numerical input. Deal cancelled.");
@@ -93,7 +105,7 @@ public class BroadcastController {
         }
     }
 
-    private static boolean hasExclusiveLiveDeal(int eventID) {
+    public static boolean hasExclusiveLiveDeal(int eventID) {
         List<BroadcastDeal> deals = getAllDeals();
         for (BroadcastDeal deal : deals) {
             if (deal.getEventID() == eventID && deal.getBroadcastType().equals("Live PPV")) {
