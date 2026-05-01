@@ -1,18 +1,27 @@
 package org.example.api.controllers;
 
-import org.example.api.JsonParser;
 import org.example.models.Sponsor;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class SponsorController {
+public class SponsorController extends AbstractController<Sponsor> {
 
     private static final String SPONSOR_FILE = "src/main/java/org/example/database/Sponsor.json";
+
+    @Override
+    protected String getFilePath() {
+        return SPONSOR_FILE;
+    }
+
+    @Override
+    protected Class<Sponsor> getType() {
+        return Sponsor.class;
+    }
+
+    @Override
+    protected int getID(Sponsor sponsor) {
+        return sponsor.getID();
+    }
 
     public static Sponsor createSponsor() {
         Scanner scanner = new Scanner(System.in);
@@ -46,47 +55,20 @@ public class SponsorController {
     }
 
     public static void saveSponsor(Sponsor sponsor) {
-        List<Sponsor> sponsors = getAllSponsors();
+        SponsorController controller = new SponsorController();
+        List<Sponsor> sponsors = controller.getAll();
         sponsors.add(sponsor);
-        writeSponsors(sponsors);
+        controller.writeAll(sponsors);
     }
 
     public static int getNextID() {
-        List<Sponsor> sponsors = getAllSponsors();
-
-        int maxID = 0;
-
-        for (Sponsor sponsor : sponsors) {
-            if (sponsor.getID() > maxID) {
-                maxID = sponsor.getID();
-            }
-        }
-
-        return maxID + 1;
+        SponsorController controller = new SponsorController();
+        return controller.getNextID(controller.getAll());
     }
 
     public static List<Sponsor> getAllSponsors() {
-        try {
-            Path path = Paths.get(SPONSOR_FILE);
-
-            if (!Files.exists(path)) {
-                createEmptySponsorFile(path);
-                return new ArrayList<>();
-            }
-
-            String json = Files.readString(path).trim();
-
-            if (json.isEmpty()) {
-                return new ArrayList<>();
-            }
-
-            List<Sponsor> sponsors = JsonParser.deserializeList(json, Sponsor.class);
-            return sponsors != null ? sponsors : new ArrayList<>();
-
-        } catch (IOException e) {
-            System.out.println("Error reading sponsor file.");
-            return new ArrayList<>();
-        }
+        SponsorController controller = new SponsorController();
+        return controller.getAll();
     }
 
     public Sponsor getSponsorByID(int id) {
@@ -112,31 +94,5 @@ public class SponsorController {
         for (Sponsor sponsor : sponsors) {
             System.out.println(sponsor);
         }
-    }
-
-    private static void writeSponsors(List<Sponsor> sponsors) {
-        try {
-            Path path = Paths.get(SPONSOR_FILE);
-
-            if (!Files.exists(path)) {
-                createEmptySponsorFile(path);
-            }
-
-            String json = JsonParser.serialize(sponsors);
-            Files.writeString(path, json);
-
-        } catch (IOException e) {
-            System.out.println("Error writing sponsor file.");
-        }
-    }
-
-    private static void createEmptySponsorFile(Path path) throws IOException {
-        Path parent = path.getParent();
-
-        if (parent != null && !Files.exists(parent)) {
-            Files.createDirectories(parent);
-        }
-
-        Files.writeString(path, "[]");
     }
 }

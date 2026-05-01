@@ -1,21 +1,31 @@
 package org.example.api.controllers;
 
-import org.example.api.JsonParser;
 import org.example.models.Event;
 import org.example.models.MatchCard;
 import org.example.models.Wrestler;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class MatchCardController {
+public class MatchCardController extends AbstractController<MatchCard> {
 
     private static final String MATCH_CARD_FILE = "src/main/java/org/example/database/MatchCard.json";
+
+    @Override
+    protected String getFilePath() {
+        return MATCH_CARD_FILE;
+    }
+
+    @Override
+    protected Class<MatchCard> getType() {
+        return MatchCard.class;
+    }
+
+    @Override
+    protected int getID(MatchCard matchCard) {
+        return matchCard.getID();
+    }
 
     public static void createMatchCard() {
         Scanner scanner = new Scanner(System.in);
@@ -102,47 +112,20 @@ public class MatchCardController {
     }
 
     public static void saveMatchCard(MatchCard matchCard) {
-        List<MatchCard> matchCards = getAllMatchCards();
+        MatchCardController controller = new MatchCardController();
+        List<MatchCard> matchCards = controller.getAll();
         matchCards.add(matchCard);
-        writeMatchCards(matchCards);
+        controller.writeAll(matchCards);
     }
 
     public static int getNextID() {
-        List<MatchCard> matchCards = getAllMatchCards();
-
-        int maxID = 0;
-
-        for (MatchCard matchCard : matchCards) {
-            if (matchCard.getID() > maxID) {
-                maxID = matchCard.getID();
-            }
-        }
-
-        return maxID + 1;
+        MatchCardController controller = new MatchCardController();
+        return controller.getNextID(controller.getAll());
     }
 
     public static List<MatchCard> getAllMatchCards() {
-        try {
-            Path path = Paths.get(MATCH_CARD_FILE);
-
-            if (!Files.exists(path)) {
-                createEmptyMatchCardFile(path);
-                return new ArrayList<>();
-            }
-
-            String json = Files.readString(path).trim();
-
-            if (json.isEmpty()) {
-                return new ArrayList<>();
-            }
-
-            List<MatchCard> matchCards = JsonParser.deserializeList(json, MatchCard.class);
-            return matchCards != null ? matchCards : new ArrayList<>();
-
-        } catch (IOException e) {
-            System.out.println("Error reading match card file.");
-            return new ArrayList<>();
-        }
+        MatchCardController controller = new MatchCardController();
+        return controller.getAll();
     }
 
     public static MatchCard getMatchCardByID(int id) {
@@ -158,14 +141,15 @@ public class MatchCardController {
     }
 
     public static boolean deleteMatchCardByID(int id) {
-        List<MatchCard> matchCards = getAllMatchCards();
+        MatchCardController controller = new MatchCardController();
+        List<MatchCard> matchCards = controller.getAll();
 
         for (int i = 0; i < matchCards.size(); i++) {
             MatchCard matchCard = matchCards.get(i);
 
             if (matchCard.getID() == id) {
                 matchCards.remove(i);
-                writeMatchCards(matchCards);
+                controller.writeAll(matchCards);
                 return true;
             }
         }
@@ -189,38 +173,14 @@ public class MatchCardController {
     public static List<String> getWrestlersByEventID(int eventID) {
         List<MatchCard> matchCards = getAllMatchCards();
         List<String> wrestlers = new ArrayList<>();
+
         for (MatchCard matchCard : matchCards) {
             if (matchCard.getEventID() == eventID) {
                 wrestlers.add(matchCard.getWrestler1());
                 wrestlers.add(matchCard.getWrestler2());
             }
         }
+
         return wrestlers;
-    }
-
-    private static void writeMatchCards(List<MatchCard> matchCards) {
-        try {
-            Path path = Paths.get(MATCH_CARD_FILE);
-
-            if (!Files.exists(path)) {
-                createEmptyMatchCardFile(path);
-            }
-
-            String json = JsonParser.serialize(matchCards);
-            Files.writeString(path, json);
-
-        } catch (IOException e) {
-            System.out.println("Error writing match card file.");
-        }
-    }
-
-    private static void createEmptyMatchCardFile(Path path) throws IOException {
-        Path parent = path.getParent();
-
-        if (parent != null && !Files.exists(parent)) {
-            Files.createDirectories(parent);
-        }
-
-        Files.writeString(path, "[]");
     }
 }
