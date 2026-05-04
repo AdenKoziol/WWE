@@ -1,0 +1,29 @@
+[
+  {
+    "ID": 1,
+    "crewID": 1,
+    "crewName": "Lighting Crew",
+    "eventID": 1,
+    "eventName": "Monday Night Raw",
+    "role": "Lighting",
+    "status": "Scheduled"
+  },
+  {
+    "ID": 2,
+    "crewID": 2,
+    "crewName": "Audio Crew",
+    "eventID": 1,
+    "eventName": "Monday Night Raw",
+    "role": "Audio",
+    "status": "Scheduled"
+  },
+  {
+    "ID": 3,
+    "crewID": 3,
+    "crewName": "Camera Crew",
+    "eventID": 2,
+    "eventName": "SmackDown Live",
+    "role": "Camera",
+    "status": "Completed"
+  }
+]

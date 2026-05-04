@@ -27,6 +27,7 @@ public class Main {
             System.out.println("10. Health and Safety");
             System.out.println("11. Coordinate Travel");
             System.out.println("12. Arena Security");
+            System.out.println("13. Manage Production");
             System.out.println("0. Exit");
             System.out.print("Choose an option: ");
 
@@ -68,6 +69,9 @@ public class Main {
                     break;
                 case "12":
                     ArenaSecurity.showMenu(scanner);
+                    break;
+                case "13":
+                    ManageProduction.showMenu(scanner);
                     break;
                 case "0":
                     System.out.println("Exiting... Goodbye!");
