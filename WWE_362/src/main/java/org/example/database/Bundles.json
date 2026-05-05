@@ -1,1 +1,42 @@
-[{"bundleSku":"BUNDLE-01","memberSkus":["BELT-CHAMP-001","RR-CAP-001"]}]
+[
+  {
+    "bundleSku": "BUNDLE-WM41-001",
+    "memberSkus": ["WM41-PROG-001", "WWE-FLAG-001", "CARD-PACK-001"]
+  },
+  {
+    "bundleSku": "BUNDLE-ROCK-001",
+    "memberSkus": ["ROCK-FOAM-001", "CARD-PACK-001"]
+  },
+  {
+    "bundleSku": "BUNDLE-CR-001",
+    "memberSkus": ["CR-FIG-001", "CR-TSH-01"]
+  },
+  {
+    "bundleSku": "BUNDLE-RR-001",
+    "memberSkus": ["RR-CAP-001", "RR-HOD-02"]
+  },
+  {
+    "bundleSku": "BUNDLE-UT-001",
+    "memberSkus": ["UT-URN-001", "UT-HAT-09"]
+  },
+  {
+    "bundleSku": "BUNDLE-SETH-001",
+    "memberSkus": ["SR-HOOD-001", "CARD-PACK-001", "WWE-FLAG-001"]
+  },
+  {
+    "bundleSku": "BUNDLE-BELT-001",
+    "memberSkus": ["BELT-CHAMP-001", "WM41-PROG-001"]
+  },
+  {
+    "bundleSku": "BUNDLE-JC-001",
+    "memberSkus": ["JC-SHIRT-001", "JC-WRI-07"]
+  },
+  {
+    "bundleSku": "BUNDLE-FANPACK-001",
+    "memberSkus": ["CARD-PACK-001", "WWE-FLAG-001", "ROCK-FOAM-001", "WM41-PROG-001"]
+  },
+  {
+    "bundleSku": "BUNDLE-VIP-001",
+    "memberSkus": ["BELT-CHAMP-001", "UT-URN-001", "SR-HOOD-001"]
+  }
+]
