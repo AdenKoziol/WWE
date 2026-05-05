@@ -45,20 +45,49 @@ public class MerchStandController {
         int qty = Integer.parseInt(scanner.nextLine());
 
         InventoryEntry entry = stand.findEntry(sku);
-        if (entry != null && entry.getQuantity() >= qty) {
-            entry.setQuantity(entry.getQuantity() - qty);
-
-            MerchandiseItem item = MerchController.findItemBySku(sku);
-            if (item != null) {
-                double saleAmount = item.getRetailPrice() * qty;
-                stand.makeSale(saleAmount);
-                System.out.printf("SALE RECORDED: Total $%.2f\n", saleAmount);
-            }
-
-            writeStands(stands);
-        } else {
+        if (entry == null || entry.getQuantity() < qty) {
             System.out.println("DENIED: Insufficient stock at this location.");
+            return;
         }
+
+        // Check if this SKU is a bundle — if so, also decrement each member SKU
+        org.example.api.controllers.BundleController.BundleRecord bundleRecord =
+                org.example.api.controllers.BundleController.findBundleRecord(sku);
+
+        if (bundleRecord != null) {
+            // Validate that every member SKU has enough stand stock before committing
+            for (String memberSku : bundleRecord.memberSkus) {
+                InventoryEntry memberEntry = stand.findEntry(memberSku);
+                if (memberEntry == null || memberEntry.getQuantity() < qty) {
+                    System.out.printf(
+                            "DENIED: Bundle sale blocked — insufficient stand stock for member SKU %s (need %d, have %d).%n",
+                            memberSku,
+                            qty,
+                            memberEntry == null ? 0 : memberEntry.getQuantity()
+                    );
+                    return;
+                }
+            }
+            // All members have enough stock — decrement each one
+            for (String memberSku : bundleRecord.memberSkus) {
+                InventoryEntry memberEntry = stand.findEntry(memberSku);
+                memberEntry.setQuantity(memberEntry.getQuantity() - qty);
+            }
+            System.out.println("BUNDLE SALE: Member SKUs decremented — " +
+                    String.join(", ", bundleRecord.memberSkus));
+        }
+
+        // Decrement the bundle (or regular) SKU entry itself
+        entry.setQuantity(entry.getQuantity() - qty);
+
+        MerchandiseItem item = MerchController.findItemBySku(sku);
+        if (item != null) {
+            double saleAmount = item.getRetailPrice() * qty;
+            stand.makeSale(saleAmount);
+            System.out.printf("SALE RECORDED: Total $%.2f%n", saleAmount);
+        }
+
+        writeStands(stands);
     }
 
     public static void viewAllStandStocks() {

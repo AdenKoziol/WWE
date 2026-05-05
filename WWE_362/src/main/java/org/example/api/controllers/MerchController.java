@@ -603,11 +603,11 @@ public class MerchController {
         List<MerchandiseItem> inventory = getAllItems();
 
         System.out.println("--- REDECORATE ITEM ---");
-        System.out.printf("%-5s | %-35s | %-10s | %-8s%n", "ID", "Name", "SKU", "Price");
+        System.out.printf("%-5s | %-35s | %-10s | %-8s | %s%n", "ID", "Name", "SKU", "Price", "Qty");
         System.out.println("------------------------------------------------------------");
         for (MerchandiseItem i : inventory) {
-            System.out.printf("%-5d | %-35s | %-10s | $%.2f%n",
-                    i.getID(), i.getName(), i.getSku(), i.getRetailPrice());
+            System.out.printf("%-5d | %-35s | %-10s | $%-7.2f | %d%n",
+                    i.getID(), i.getName(), i.getSku(), i.getRetailPrice(), i.getGlobalQuantity());
         }
 
         System.out.print("\nEnter Item ID to redecorate: ");
@@ -630,9 +630,69 @@ public class MerchController {
 
         System.out.println("Current: " + target.getName() + " @ $" + String.format("%.2f", target.getRetailPrice()));
         System.out.println("Wholesale cost (locked): $" + String.format("%.2f", target.getWholesaleCost()));
-        System.out.println("Note: decorations will be applied on top of the current retail price.");
+        System.out.printf("Available stock: %d units%n", target.getGlobalQuantity());
 
-        MerchandiseItem updated = target;
+        // --- Partial split: how many units to decorate? ---
+        int splitQty;
+        try {
+            System.out.printf("How many units to redecorate? (1-%d, or Enter for all): ", target.getGlobalQuantity());
+            String splitInput = scanner.nextLine().trim();
+            if (splitInput.isEmpty()) {
+                splitQty = target.getGlobalQuantity();
+            } else {
+                splitQty = Integer.parseInt(splitInput);
+                if (splitQty <= 0 || splitQty > target.getGlobalQuantity()) {
+                    System.out.printf("ERROR: Must be between 1 and %d.%n", target.getGlobalQuantity());
+                    return;
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid quantity.");
+            return;
+        }
+
+        boolean isPartial = splitQty < target.getGlobalQuantity();
+
+        // If partial split, require a new SKU for the decorated subset
+        String newSku = target.getSku();
+        if (isPartial) {
+            System.out.println("Partial redecoration — the decorated subset needs its own SKU.");
+            System.out.print("Enter new SKU for the decorated " + splitQty + " units: ");
+            newSku = scanner.nextLine().trim();
+            if (newSku.isEmpty()) {
+                System.out.println("SKU cannot be empty. Aborting.");
+                return;
+            }
+            if (findItemBySku(newSku) != null) {
+                System.out.println("ERROR: SKU " + newSku + " already exists. Aborting.");
+                return;
+            }
+        }
+
+        // Strip any existing decorator prefixes from the name so re-decorating
+        // never stacks labels on top of previously baked-in ones (e.g. double [LIMITED EDITION]).
+        // The retail price is also reset to wholesale cost as a safe base — the user
+        // will add surcharges/markups fresh via the decorator prompts below.
+        String baseName  = stripAllPrefixes(target.getName());
+        double basePrice = target.getWholesaleCost();
+
+        if (!baseName.equals(target.getName())) {
+            System.out.println("Note: existing decorator labels stripped — re-apply your desired decorations below.");
+            System.out.printf ("      Base name : %s%n", baseName);
+            System.out.printf ("      Base price reset to wholesale: $%.2f%n", basePrice);
+        } else {
+            System.out.println("Note: decorations will be applied on top of the current retail price.");
+        }
+
+        // Build a temporary base item with the split quantity and (possibly new) SKU
+        MerchandiseItem updated = new BasicMerchandiseItem(
+                isPartial ? getNextID() : target.getID(),
+                baseName,
+                newSku,
+                target.getWholesaleCost(),
+                basePrice,
+                splitQty
+        );
 
         System.out.print("Apply autograph? (y/n): ");
         if (scanner.nextLine().equalsIgnoreCase("y")) {
@@ -673,7 +733,7 @@ public class MerchController {
             }
         }
 
-        if (updated == target) {
+        if (updated.getName().equals(target.getName()) && updated.getRetailPrice() == target.getRetailPrice()) {
             System.out.println("No decorations applied. Item unchanged.");
             return;
         }
@@ -686,28 +746,58 @@ public class MerchController {
             }
         }
 
-        final int targetId = id;
-        inventory.removeIf(i -> i.getID() == targetId);
-        BasicMerchandiseItem flat = new BasicMerchandiseItem(
+        // Flatten the decorated item to a BasicMerchandiseItem for persistence
+        BasicMerchandiseItem decoratedFlat = new BasicMerchandiseItem(
                 updated.getID(),
                 updated.getName(),
                 updated.getSku(),
                 updated.getWholesaleCost(),
                 updated.getRetailPrice(),
-                updated.getGlobalQuantity()
+                splitQty
         );
-        inventory.add(flat);
+
+        final int targetId = id;
+
+        if (isPartial) {
+            // Decrement the original item's quantity by splitQty, keep it in inventory
+            inventory.stream()
+                    .filter(i -> i.getID() == targetId)
+                    .findFirst()
+                    .ifPresent(orig -> orig.setGlobalQuantity(orig.getGlobalQuantity() - splitQty));
+            // Add the new decorated entry as a separate line
+            inventory.add(decoratedFlat);
+        } else {
+            // Full redecoration — replace the original entry entirely
+            inventory.removeIf(i -> i.getID() == targetId);
+            inventory.add(decoratedFlat);
+        }
+
         writeItems(inventory);
 
-        System.out.println("SUCCESS: Item updated.");
-        System.out.println("  Name : " + flat.getName());
-        System.out.printf ("  Price: $%.2f%n", flat.getRetailPrice());
-        System.out.printf ("  Margin: %.2f%%%n", flat.getProfitMargin());
+        System.out.println("\nSUCCESS: Redecoration complete.");
+        if (isPartial) {
+            System.out.printf("  Original  : %s | SKU: %s | Qty remaining: %d%n",
+                    target.getName(), target.getSku(), target.getGlobalQuantity() - splitQty);
+        }
+        System.out.printf("  Decorated : %s | SKU: %s | Qty: %d | Price: $%.2f | Margin: %.2f%%%n",
+                decoratedFlat.getName(), decoratedFlat.getSku(),
+                decoratedFlat.getGlobalQuantity(), decoratedFlat.getRetailPrice(),
+                decoratedFlat.getProfitMargin());
     }
 
     private static int getNextID() {
         List<MerchandiseItem> items = getAllItems();
         return items.stream().mapToInt(MerchandiseItem::getID).max().orElse(0) + 1;
+    }
+
+    /** Public alias for BundleController to generate a new unique item ID. */
+    public static int getNextIDPublic() {
+        return getNextID();
+    }
+
+    /** Public alias for BundleController to write the item list directly. */
+    public static void writeItemsPublic(List<MerchandiseItem> items) {
+        writeItems(items);
     }
 
     private static void createEmptyFile(Path path) throws IOException {

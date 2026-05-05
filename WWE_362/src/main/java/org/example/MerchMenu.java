@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.api.controllers.EmployeeController;
+import org.example.api.controllers.BundleController;
 import org.example.api.controllers.MerchController;
 import org.example.api.controllers.MerchStandController;
 import java.util.Scanner;
@@ -18,27 +19,30 @@ public class MerchMenu {
             System.out.println("4. Delete Merch Stand");
             System.out.println("5. Redecorate Existing Item");
             System.out.println("6. Strip Decorations from Item");
+            System.out.println("7. Create Bundle");
+            System.out.println("8. View Bundles");
+            System.out.println("9. Delete Bundle");
 
             System.out.println("\n[LOGISTICS & SALES]");
-            System.out.println("7. Assign Stock to Stand (Warehouse -> Stand)");
-            System.out.println("8. Process Live Sale");
-            System.out.println("9. View Stand Inventory Manifests");
+            System.out.println("10. Assign Stock to Stand (Warehouse -> Stand)");
+            System.out.println("11. Process Live Sale");
+            System.out.println("12. View Stand Inventory Manifests");
 
             System.out.println("\n[INVENTORY & REPORTING]");
-            System.out.println("10. View Global Inventory (All Products)");
-            System.out.println("11. Search Product by SKU");
-            System.out.println("12. Financial Stock Valuation Report");
-            System.out.println("13. View Low Margin Alerts");
-            System.out.println("14. View Sales Report");
-            System.out.println("15. View Restock Alerts");
+            System.out.println("13. View Global Inventory (All Products)");
+            System.out.println("14. Search Product by SKU");
+            System.out.println("15. Financial Stock Valuation Report");
+            System.out.println("16. View Low Margin Alerts");
+            System.out.println("17. View Sales Report");
+            System.out.println("18. View Restock Alerts");
 
             System.out.println("\n[STAFFING]");
-            System.out.println("16. Create Employee");
-            System.out.println("17. View All Employees");
-            System.out.println("18. Delete Employee");
-            System.out.println("19. Assign Employee To Stand");
-            System.out.println("20. Remove Employee From Stand");
-            System.out.println("21. View Stand Staffing Assignments");
+            System.out.println("19. Create Employee");
+            System.out.println("20. View All Employees");
+            System.out.println("21. Delete Employee");
+            System.out.println("22. Assign Employee To Stand");
+            System.out.println("23. Remove Employee From Stand");
+            System.out.println("24. View Stand Staffing Assignments");
 
             System.out.println("0. Back");
             System.out.print("\nSelection: ");
@@ -64,39 +68,48 @@ public class MerchMenu {
                     MerchController.stripDecorations(scanner);
                     break;
                 case "7":
-                    MerchController.assignToBooth(scanner);
+                    BundleController.createBundle(scanner);
                     break;
                 case "8":
-                    MerchStandController.processSale(scanner);
+                    BundleController.viewBundles();
                     break;
                 case "9":
-                    MerchStandController.viewAllStandStocks();
+                    BundleController.deleteBundle(scanner);
                     break;
                 case "10":
-                    MerchController.viewAllInventory();
+                    MerchController.assignToBooth(scanner);
                     break;
                 case "11":
-                    MerchController.searchBySku(scanner);
+                    MerchStandController.processSale(scanner);
                     break;
                 case "12":
-                    MerchController.viewStockValuation();
+                    MerchStandController.viewAllStandStocks();
                     break;
                 case "13":
-                    MerchController.viewLowMarginAlerts();
+                    MerchController.viewAllInventory();
                     break;
                 case "14":
-                    MerchController.viewSaleReport();
+                    MerchController.searchBySku(scanner);
                     break;
                 case "15":
-                    MerchController.viewRestockAlerts();
+                    MerchController.viewStockValuation();
                     break;
                 case "16":
-                    EmployeeController.createEmployee();
+                    MerchController.viewLowMarginAlerts();
                     break;
                 case "17":
-                    EmployeeController.displayAllEmployees();
+                    MerchController.viewSaleReport();
                     break;
                 case "18":
+                    MerchController.viewRestockAlerts();
+                    break;
+                case "19":
+                    EmployeeController.createEmployee();
+                    break;
+                case "20":
+                    EmployeeController.displayAllEmployees();
+                    break;
+                case "21":
                     System.out.print("Enter employee ID to delete: ");
                     try {
                         int id = Integer.parseInt(scanner.nextLine());
@@ -111,13 +124,13 @@ public class MerchMenu {
                         System.out.println("Invalid ID.");
                     }
                     break;
-                case "19":
+                case "22":
                     MerchStandController.assignEmployeeToStand(scanner);
                     break;
-                case "20":
+                case "23":
                     removeEmployeeFromStand(scanner);
                     break;
-                case "21":
+                case "24":
                     MerchStandController.viewAllStandStocks();
                     break;
                 case "0":
