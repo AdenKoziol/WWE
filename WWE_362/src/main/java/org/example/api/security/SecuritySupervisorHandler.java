@@ -6,12 +6,12 @@ public class SecuritySupervisorHandler extends SecurityHandler {
 
     @Override
     public void handle(SecurityIncident incident) {
-        if (incident.getSeverity().equalsIgnoreCase("Moderate")) {
+
+        if ("ESCALATED".equalsIgnoreCase(incident.getStatus())) {
             incident.setStatus("RESOLVED");
-            incident.setResolvedBy("Security Supervisor");
             incident.setResolutionNotes("Resolved by security supervisor.");
-        } else if (nextHandler != null) {
-            incident.setStatus("ESCALATED");
+        }
+        else if (nextHandler != null) {
             nextHandler.handle(incident);
         }
     }

@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
+    private static final DepartmentContext context = new DepartmentContext(scanner);
 
     public static void main(String[] args) {
         showMainMenu();
@@ -34,40 +35,52 @@ public class Main {
 
             switch (choice) {
                 case "1":
-                    EventPlanning.showMenu(scanner);
+                    context.setState(new EventPlanningState());
+                    context.showCurrentDepartment();
                     break;
                 case "2":
-                    BoxOffice.showMenu(scanner);
+                    context.setState(new BoxOfficeState());
+                    context.showCurrentDepartment();
                     break;
                 case "3":
-                    CostumeDesigning.showmenu(scanner);
+                    context.setState(new CostumeDesigningState());
+                    context.showCurrentDepartment();
                     break;
                 case "4":
-                    TalentManagement.showMenu(scanner);
+                    context.setState(new TalentManagementState());
+                    context.showCurrentDepartment();
                     break;
                 case "5":
-                    MatchCardCreating.showMenu(scanner);
+                    context.setState(new MatchCardCreatingState());
+                    context.showCurrentDepartment();
                     break;
                 case "6":
-                    ManageConcessions.showMenu(scanner);
+                    context.setState(new ManageConcessionsState());
+                    context.showCurrentDepartment();
                     break;
                 case "7":
-                    ManageSponsorships.showMenu(scanner);
+                    context.setState(new ManageSponsorshipsState());
+                    context.showCurrentDepartment();
                     break;
                 case "8":
-                    MerchMenu.showMenu(scanner);
+                    context.setState(new MerchMenuState());
+                    context.showCurrentDepartment();
                     break;
                 case "9":
-                    ManageBroadcasting.showMenu(scanner);
+                    context.setState(new ManageBroadcastingState());
+                    context.showCurrentDepartment();
                     break;
                 case "10":
-                    HealthAndSafety.showMenu(scanner);
+                    context.setState(new HealthAndSafetyState());
+                    context.showCurrentDepartment();
                     break;
                 case "11":
-                    CoordinateTravel.showMenu(scanner);
+                    context.setState(new CoordinateTravelState());
+                    context.showCurrentDepartment();
                     break;
                 case "12":
-                    ArenaSecurity.showMenu(scanner);
+                    context.setState(new ArenaSecurityState());
+                    context.showCurrentDepartment();
                     break;
                 case "0":
                     System.out.println("Exiting... Goodbye!");
