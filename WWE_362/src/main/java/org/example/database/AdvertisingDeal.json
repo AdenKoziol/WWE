@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "ID": 1,
+    "eventID": 5,
+    "broadcastDealID": 2,
+    "advertiserName": "Coca Cola",
+    "adMinutes": 15,
+    "costPerMinute": 1000.0,
+    "totalCost": 15000.0,
+    "placement": "Main Event Break"
+  },
+  {
+    "ID": 2,
+    "eventID": 5,
+    "broadcastDealID": 2,
+    "advertiserName": "DraftKings",
+    "adMinutes": 8,
+    "costPerMinute": 1000.0,
+    "totalCost": 8000.0,
+    "placement": "Pre-Show"
+  },
+  {
+    "ID": 3,
+    "eventID": 5,
+    "broadcastDealID": 2,
+    "advertiserName": "Snickers",
+    "adMinutes": 10,
+    "costPerMinute": 1000.0,
+    "totalCost": 10000.0,
+    "placement": "Mid-Event"
+  }
+]
