@@ -6,12 +6,12 @@ public class ArenaChiefHandler extends SecurityHandler {
 
     @Override
     public void handle(SecurityIncident incident) {
-        if (incident.getSeverity().equalsIgnoreCase("High")) {
+
+        if (!"RESOLVED".equalsIgnoreCase(incident.getStatus())) {
             incident.setStatus("RESOLVED");
-            incident.setResolvedBy("Arena Security Chief");
             incident.setResolutionNotes("Resolved by arena security chief.");
-        } else if (nextHandler != null) {
-            incident.setStatus("ESCALATED");
+        }
+        else if (nextHandler != null) {
             nextHandler.handle(incident);
         }
     }
