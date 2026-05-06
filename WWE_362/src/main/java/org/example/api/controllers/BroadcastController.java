@@ -86,6 +86,22 @@ public class BroadcastController {
         }
     }
 
+    public static void viewLivePpvDeals() {
+        List<BroadcastDeal> deals = getAllDeals();
+        boolean found = false;
+
+        for (BroadcastDeal deal : deals) {
+            if (deal.getBroadcastType().equals("Live PPV")) {
+                System.out.println(deal);
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("No Live PPV broadcast deals are available.");
+        }
+    }
+
     public static void deleteDeal(Scanner scanner) {
         System.out.print("Enter Broadcast Deal ID to delete: ");
         try {
@@ -113,6 +129,16 @@ public class BroadcastController {
             }
         }
         return false;
+    }
+
+    public static BroadcastDeal findLivePpvDealForEvent(int eventID) {
+        List<BroadcastDeal> deals = getAllDeals();
+        for (BroadcastDeal deal : deals) {
+            if (deal.getEventID() == eventID && deal.getBroadcastType().equals("Live PPV")) {
+                return deal;
+            }
+        }
+        return null;
     }
 
     private static void saveDeal(BroadcastDeal deal) {

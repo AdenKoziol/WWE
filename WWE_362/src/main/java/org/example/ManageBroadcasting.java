@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.api.controllers.BroadcastController;
+import org.example.api.controllers.AdvertisingController;
 import java.util.Scanner;
 
 public class ManageBroadcasting {
@@ -15,6 +16,9 @@ public class ManageBroadcasting {
             System.out.println("1. Register Broadcast Deal");
             System.out.println("2. View All Broadcast Deals");
             System.out.println("3. Delete Broadcast Deal");
+            System.out.println("4. Register Live PPV Advertising Deal");
+            System.out.println("5. View All Advertising Deals");
+            System.out.println("6. Delete Advertising Deal");
             System.out.println("0. Back");
             System.out.print("Choose an option: ");
 
@@ -29,6 +33,15 @@ public class ManageBroadcasting {
                     break;
                 case "3":
                     BroadcastController.deleteDeal(scanner);
+                    break;
+                case "4":
+                    AdvertisingController.registerAdvertisingDeal(scanner);
+                    break;
+                case "5":
+                    AdvertisingController.viewAllAdvertisingDeals();
+                    break;
+                case "6":
+                    AdvertisingController.deleteAdvertisingDeal(scanner);
                     break;
                 case "0":
                     return;
